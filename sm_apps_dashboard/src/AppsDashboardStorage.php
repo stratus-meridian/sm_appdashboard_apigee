@@ -4,6 +4,12 @@ namespace Drupal\sm_apps_dashboard;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 
+/**
+ * Defines AppsDashboardStorage class.
+ *
+ * Author: Mer Alvin A. Grita (mer.grita@stratusmeridian.com)
+ *
+ */
 class AppsDashboardStorage {
 	/**
 	 * Load Labels
@@ -64,16 +70,54 @@ class AppsDashboardStorage {
 
 		foreach($appCredentials[0]->getApiProducts() as $apiProduct) {
 			$data_apiProducts[] = array(
-				// array(
-				// 	'data' => $apiProduct->getApiProduct(),
-				// 	'header' => TRUE,
-				// ),
 				$apiProduct->getApiProduct(),
 				$apiProduct->getStatus(),
 			);
 		}
 
 		return $data_apiProducts;
+	}
+
+	/**
+	 * Retrieve Overall Status
+	 */
+	public static function getOverallStatus($app) {
+		$appCredentials = $app->getCredentials();
+
+		$appStatus = $app->getStatus();
+		$appCredStatus = $appCredentials[0]->getStatus();
+
+		static $statuses;
+
+		if (!isset($statuses)) {
+			$statuses = array(
+				'approved' => 0,
+				'pending' => 1,
+				'revoked' => 2
+			);
+		}
+
+		$appStatus = (array_key_exists($app->getStatus(), $statuses) ? $statuses[$app->getStatus()] : 0);
+		$appCredStatus = (array_key_exists($appCredentials[0]->getStatus(), $statuses) ? $statuses[$appCredentials[0]->getStatus()] : 0);
+		$appOverallStatus = max($appStatus, $appCredStatus);
+
+		if ($appOverallStatus < 2) {
+			foreach ($appCredentials[0]->getApiProducts() as $api_product) {
+				if (!array_key_exists($api_product->getStatus(), $statuses)) {
+					continue;
+				}
+
+				$appOverallStatus = max($appOverallStatus, $statuses[$api_product->getStatus()]);
+
+				if ($appOverallStatus == 2) {
+					break;
+				}
+			}
+		}
+
+		$arrStatusSearch = array_search($appOverallStatus, $statuses);
+
+		return $arrStatusSearch;
 	}
 
 	public static function startsWith($string, $startString) {

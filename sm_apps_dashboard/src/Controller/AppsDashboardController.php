@@ -9,6 +9,9 @@ use Drupal\Core\Url;
 
 /**
  * Defines AppsDashboardController class.
+ *
+ * Author: Mer Alvin A. Grita (mer.grita@stratusmeridian.com)
+ *
  */
 class AppsDashboardController extends ControllerBase {
 	public function listApps() {
@@ -29,7 +32,9 @@ class AppsDashboardController extends ControllerBase {
 
 		foreach ($apps as $appKey => $app) {
 			if ($app->getEntityTypeId() == 'developer_app') {
-				/** Set Developer Apps owner active data **/
+				/**
+				 * Set Developer Apps owner active data
+				 */
 				$ownerEntity = $app->getOwner();
 
 				if ($ownerEntity) {
@@ -38,7 +43,9 @@ class AppsDashboardController extends ControllerBase {
 					$appOwnerActive = $this->t('no');
 				}
 
-				/** Set Developer Apps email address data **/
+				/**
+				 * Set Developer Apps email address data
+				 */
 				if ($app->getOwnerId()) {
 					if ($ownerEntity) {
 						$appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
@@ -49,15 +56,26 @@ class AppsDashboardController extends ControllerBase {
 
 				$appCompany = '';
 			} else {
+				/**
+				 * Set Team Apps company name
+				 */
 				$appDeveloperEmail = '';
-
-				/** Set Team Apps company name **/
 				$appCompany = $app->getCompanyName();
 			}
 
+			/**
+			 * Get App Credentials
+			 */
 			$appCredentials = $app->getCredentials();
 
-			/** Setup actions (dropdown) **/
+			/**
+			 * Get App Overall Status
+			 */
+			$appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+
+			/**
+			 * Setup actions (dropdown)
+			 */
 			$view_url = Url::fromRoute('apps_dashboard.view', array(
 				'apptype' => $app->getEntityTypeId(),
 				'appid' => $appKey,
@@ -82,12 +100,14 @@ class AppsDashboardController extends ControllerBase {
 				),
 			);
 
-			/** App Details array push to variables **/
+			/**
+			 * App Details array push to variables
+			 */
 			array_push($appDetails, array(
 				'AppDisplayName' => $app->getDisplayName() . ' [Internal Name: ' . $app->getName() . ']',
 				'AppDeveloperEmail' => $appDeveloperEmail,
 				'AppCompany' => $appCompany,
-				'AppStatus' => ($appCredentials[0]->getStatus() ? $appCredentials[0]->getStatus() : $app->getStatus()),
+				'AppStatus' => $appOverallStatus,
 				'OwnerActive' => $appOwnerActive,
 				'AppCreatedAt' => $app->getCreatedAt()->format('l, M. d, Y H:i'),
 				'AppModifiedAt' => $app->getlastModifiedAt()->format('l, M. d, Y H:i'),
@@ -129,7 +149,9 @@ class AppsDashboardController extends ControllerBase {
 		$app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
 
 		if ($app->getEntityTypeId() == 'developer_app') {
-			/** Set Developer Apps owner active data **/
+			/**
+			 * Set Developer Apps owner active data
+			 */
 			$ownerEntity = $app->getOwner();
 
 			if ($ownerEntity) {
@@ -138,7 +160,9 @@ class AppsDashboardController extends ControllerBase {
 				$appOwnerActive = $this->t('no');
 			}
 
-			/** Set Developer Apps email address data **/
+			/**
+			 * Set Developer Apps email address data
+			 */
 			if ($app->getOwnerId()) {
 				if ($ownerEntity) {
 					$appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
@@ -149,9 +173,10 @@ class AppsDashboardController extends ControllerBase {
 
 			$appCompany = '';
 		} else {
+			/**
+			 * Set Team Apps company name
+			 */
 			$appDeveloperEmail = '';
-
-			/** Set Team Apps company name **/
 			$appCompany = $app->getCompanyName();
 		}
 
@@ -160,6 +185,11 @@ class AppsDashboardController extends ControllerBase {
 		 */
 		$appCredentials = $app->getCredentials();
 		$apiProducts = AppsDashboardStorage::getApiProducts($app);
+
+		/**
+		 * Get App Overall Status
+		 */
+		$appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
 
 		$data_apiProducts = array();
 
@@ -199,7 +229,7 @@ class AppsDashboardController extends ControllerBase {
 			),
 			array(
 				array('data' => 'Overall App Status', 'header' => TRUE),
-				$appCredentials[0]->getStatus() ? $appCredentials[0]->getStatus() : $app->getStatus(),
+				$appOverallStatus,
 			),
 			array(
 				array('data' => 'Active User in the site?', 'header' => TRUE),

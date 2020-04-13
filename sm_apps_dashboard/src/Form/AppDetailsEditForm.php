@@ -6,19 +6,28 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\sm_apps_dashboard\AppsDashboardStorage;
-use GuzzleHttp\Client;
-use Apigee\Edge\Client as ApigeeClient;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;
+use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
+use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
+use Apigee\Edge\Api\Management\Entity\DeveloperApp;
+use Apigee\Edge\Api\Management\Controller\CompanyAppController;
+use Apigee\Edge\Api\Management\Controller\CompanyAppCredentialController;
+use Apigee\Edge\Api\Management\Controller\CompanyApp;
+use Apigee\Edge\Exception\ApiException;
+use Apigee\Edge\Exception\ApiRequestException;
+use Apigee\Edge\Exception\ClientErrorException;
+use Apigee\Edge\Exception\ServerErrorException;
+use Apigee\Edge\Structure\AttributesProperty;
 
+/**
+ * Defines AppDetailsEditForm class.
+ *
+ * Author: Mer Alvin A. Grita (mer.grita@stratusmeridian.com)
+ *
+ */
 class AppDetailsEditForm extends FormBase {
-	/**
-	 * The HTTP client.
-	 *
-	 * @var \GuzzleHttp\Client
-	 */
-	protected $httpClient;
-
 	/**
 	 * The SDK connector service.
 	 *
@@ -34,8 +43,7 @@ class AppDetailsEditForm extends FormBase {
 	 * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
 	 *   The SDK connector service.
 	 */
-	public function __construct(Client $http_client, SDKConnectorInterface $connector) {
-		$this->httpClient = $http_client;
+	public function __construct(SDKConnectorInterface $connector) {
 		$this->connector = $connector;
 	}
 
@@ -44,7 +52,6 @@ class AppDetailsEditForm extends FormBase {
 	 */
 	public static function create(ContainerInterface $container) {
 		return new static(
-			$container->get('http_client'),
 			$container->get('apigee_edge.sdk_connector')
 		);
 	}
@@ -70,7 +77,9 @@ class AppDetailsEditForm extends FormBase {
 		$app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
 
 		if ($app->getEntityTypeId() == 'developer_app') {
-			/** Set Developer Apps owner active data **/
+			/**
+			 * Set Developer Apps owner active data
+			 */
 			$ownerEntity = $app->getOwner();
 
 			if ($ownerEntity) {
@@ -79,7 +88,9 @@ class AppDetailsEditForm extends FormBase {
 				$appOwnerActive = t('no');
 			}
 
-			/** Set Developer Apps email address data **/
+			/**
+			 * Set Developer Apps email address data
+			 */
 			if ($app->getOwnerId()) {
 				if ($ownerEntity) {
 					$appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
@@ -92,7 +103,9 @@ class AppDetailsEditForm extends FormBase {
 		} else {
 			$appDeveloperEmail = '';
 
-			/** Set Team Apps company name **/
+			/**
+			 * Set Team Apps company name
+			 */
 			$appCompany = $app->getCompanyName();
 		}
 
@@ -102,8 +115,16 @@ class AppDetailsEditForm extends FormBase {
 		$appCredentials = $app->getCredentials();
 		$apiProducts = AppsDashboardStorage::getApiProducts($app);
 
+		/**
+		 * Get App Overall Status
+		 */
+		$appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+
 		$data_apiProducts = array();
 
+		/**
+		 * Get API Products
+		 */
 		$i = 0;
 		foreach($apiProducts as $apiProduct) {
 			$data_apiProducts['selectbox_products_'.$i] = array(
@@ -145,7 +166,7 @@ class AppDetailsEditForm extends FormBase {
 			),
 			array(
 				array('data' => 'Overall App Status', 'header' => TRUE),
-				$appCredentials[0]->getStatus() ? $appCredentials[0]->getStatus() : $app->getStatus(),
+				$appOverallStatus,
 			),
 			array(
 				array('data' => 'Active User in the site?', 'header' => TRUE),
@@ -165,10 +186,6 @@ class AppDetailsEditForm extends FormBase {
 			),
 		);
 
-		/** Apigee Connection Details **/
-		$_getApigeeOrganization = $this->connector->getOrganization();
-		$_getApigeeEndPoint = $this->connector->getClient()->getEndPoint();
-
 		$form = array(
 			'details__app_details' => array(
 				'#type' => 'details',
@@ -184,14 +201,6 @@ class AppDetailsEditForm extends FormBase {
 				'#title' => t('API Products'),
 				'#open' => TRUE,
 				'api_products' => $data_apiProducts,
-				'api_organization' => array(
-					'#type' => 'hidden',
-					'#value' => $_getApigeeOrganization,
-				),
-				'api_endpoint' => array(
-					'#type' => 'hidden',
-					'#value' => $_getApigeeEndPoint,
-				),
 				'app_consumer_key' => array(
 					'#type' => 'hidden',
 					'#value' => $appCredentials[0]->getConsumerKey(),
@@ -200,9 +209,17 @@ class AppDetailsEditForm extends FormBase {
 					'#type' => 'hidden',
 					'#value' => $appDeveloperEmail,
 				),
+				'app_company' => array(
+					'#type' => 'hidden',
+					'#value' => $appCompany,
+				),
 				'app_internal_name' => array(
 					'#type' => 'hidden',
 					'#value' => rawurlencode($app->getName()),
+				),
+				'app_entity_type' => array(
+					'#type' => 'hidden',
+					'#value' => $apptype,
 				),
 			),
 			'actions' => array(
@@ -237,44 +254,122 @@ class AppDetailsEditForm extends FormBase {
 	 * {@inheritdoc}
 	 */
 	public function validateForm(array &$form, FormStateInterface $form_state) {
-		$arrFormValues = $form_state->getValues();
-		$FormSelectBoxApiProducts = $form['details__api_products']['api_products'];
 
-		$val_apiproducts = array();
-
-		foreach($FormSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
-			if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
-				array_push($val_apiproducts, array(
-					'apiproducts_name' => rawurlencode($selectboxValue['#title']),
-					'apiproducts_status' => $form_state->getValue($selectboxKey),
-				));
-			}
-		}
-
-		$val_api_organization = $form_state->getValue('api_organization');
-		$val_api_endpoint = $form_state->getValue('api_endpoint');
-		$val_api_consumer_key = $form_state->getValue('app_consumer_key');
-		$val_app_developer_email = $form_state->getValue('app_developer_email');
-		$val_app_internal_name = rawurlencode($form_state->getValue('app_internal_name'));
-
-		foreach($val_apiproducts as $val_apiproduct) {
-			$http_request = $val_api_endpoint;
-			$http_request .= '/organizations/' . $val_api_organization;
-			$http_request .= '/developers/' . $val_app_developer_email;
-			$http_request .= '/apps/' . $val_app_internal_name;
-			$http_request .= '/keys/' . $val_api_consumer_key;
-			$http_request .= '/apiproducts/' . $val_apiproduct['apiproducts_name'];
-			$http_request .= ($val_apiproduct['apiproducts_status'] == 'approved' ? '?action=approve' : '?action=revoke');
-
-			//$this->httpClient->post($http_request);
-			//$this->connector->getClient()->post($http_request);
-		}
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public function submitForm(array &$form, FormStateInterface $form_state) {
+		/**
+		 * Get API Products (Name and selected Status)
+		 */
+		$FormSelectBoxApiProducts = $form['details__api_products']['api_products'];
 
+		$val_apiproducts = array();
+
+		/**
+		 * Array push API Products to $val_apiproducts
+		 */
+		foreach($FormSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
+			if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
+				array_push($val_apiproducts, array(
+					'apiproducts_name' => $selectboxValue['#title'],
+					'apiproducts_status' => $form_state->getValue($selectboxKey),
+				));
+			}
+		}
+
+		if ($form_state->getValue('app_entity_type') == 'developer_app') {
+			/**
+			 * Open New Developer App Controller
+			 */
+			$devAppController = new DeveloperAppController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $this->connector->getClient());
+
+			/**
+			 * Create a try and catch to test the connection of Developer App Controller
+			 */
+			try {
+				/**
+				 * Open Developer App Credentials' Controller
+				 */
+				$devAppCredentialsController = new DeveloperAppCredentialController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $form_state->getValue('app_internal_name'), $this->connector->getClient());
+
+				/**
+				 * Set and save the new status of API Products associated with the this Developer App
+				 */
+				foreach($val_apiproducts as $val_apiproduct) {
+					$apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? DeveloperAppCredentialController::STATUS_APPROVE : DeveloperAppCredentialController::STATUS_REVOKE);
+					$devAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
+				}
+
+				/**
+				 * Close all open controllers
+				 */
+				$devAppCredentialsController = NULL;
+				$devAppController = NULL;
+
+				drupal_set_message(t('App Details are successfully updated.'), 'status');
+				$form_state->setRedirect('apps_dashboard.list');
+			} catch (ClientErrorException $err) {
+				if ($err->getEdgeErrorCode()) {
+					drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
+				} else {
+					drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+				}
+			} catch (ServerErrorException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			} catch (ApiRequestException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			} catch (ApiException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			}
+		} else {
+			/**
+			 * Open New Company App Controller
+			 */
+			$compAppController = new CompanyAppController($this->connector->getOrganization(), $form_state->getValue('app_company'), $this->connector->getClient());
+
+			try {
+				/**
+				 * Open Company App Credentials' Controller
+				 */
+				$compAppCredentialsController = new CompanyAppCredentialController(
+					$this->connector->getOrganization(),
+					$form_state->getValue('app_company'),
+					$form_state->getValue('app_internal_name'),
+					$this->connector->getClient()
+				);
+
+				/**
+				 * Set and save the new status of API Products associated with the this Company App
+				 */
+				foreach($val_apiproducts as $val_apiproduct) {
+					$apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? CompanyAppCredentialController::STATUS_APPROVE : CompanyAppCredentialController::STATUS_REVOKE);
+					$compAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
+				}
+
+				/**
+				 * Close all open controllers
+				 */
+				$compAppCredentialsController = NULL;
+				$compAppController = NULL;
+
+				drupal_set_message(t('App Details are successfully updated.'), 'status');
+				$form_state->setRedirect('apps_dashboard.list');
+			} catch (ClientErrorException $err) {
+				if ($err->getEdgeErrorCode()) {
+					drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
+				} else {
+					drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+				}
+			} catch (ServerErrorException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			} catch (ApiRequestException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			} catch (ApiException $err) {
+				drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+			}
+		}
 	}
 }
