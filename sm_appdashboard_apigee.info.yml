@@ -1,5 +1,5 @@
 name: Stratus Meridian Apps Dashboard
-description: 'Provides a View display style that renders a list of Apps available at Apigee.'
+description: 'Provides an application dashboard interface for product manager role to approve/revoke keys connected to an Apigee Org.'
 package: Stratus Meridian
 
 type: module
