@@ -1,4 +1,4 @@
-# Apigee App Dashboard
+# Stratus Meridian Apps Dashboard
 
 Provides an application dashboard interface for product manager role to approve/revoke keys connected to an Apigee Org.
 
