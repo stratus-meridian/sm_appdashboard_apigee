@@ -129,7 +129,7 @@ class AppsDashboardController extends ControllerBase {
 			'#type' => 'table',
 			'#header' => $arrApps['labelAppDetails'],
 			'#rows' => $arrApps['appDetails'],
-			'#empty' => t('No data found'),
+			'#empty' => $this->t('No data found'),
 		];
 
 		return $form;

@@ -64,6 +64,15 @@ class AppDetailsEditForm extends FormBase {
 	}
 
 	public function buildForm(array $form, FormStateInterface $form_state, $apptype = NULL, $appid = NULL) {
+		try {
+			$this->connector->testConnection();
+		} catch (\Exception $exception) {
+			$this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
+				':link' => Url::fromRoute('apigee_edge.settings')->toString(),
+			]));
+			return $form;
+		}
+
 		if (!isset($apptype) || !isset($appid)) {
 			drupal_set_message(t('There are errors encountered upon viewing the App Details.'), 'error');
 			return new RedirectResponse(Drupal::url('apps_dashboard.list'));
@@ -83,9 +92,9 @@ class AppDetailsEditForm extends FormBase {
 			$ownerEntity = $app->getOwner();
 
 			if ($ownerEntity) {
-				$appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? t('yes') : t('no'));
+				$appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? $this->t('yes') : $this->t('no'));
 			} else {
-				$appOwnerActive = t('no');
+				$appOwnerActive = $this->t('no');
 			}
 
 			/**
@@ -130,10 +139,10 @@ class AppDetailsEditForm extends FormBase {
 			$data_apiProducts['selectbox_products_'.$i] = array(
 				'#type' => 'select',
 				'#title' => $apiProduct[0],
-				'#description' => t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
+				'#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
 				'#options' => array(
-					'approved' => t('approved'),
-					'revoked'=> t('revoked'),
+					'approved' => $this->t('approved'),
+					'revoked'=> $this->t('revoked'),
 				),
 				'#default_value' => $apiProduct[1],
 			);
@@ -189,7 +198,7 @@ class AppDetailsEditForm extends FormBase {
 		$form = array(
 			'details__app_details' => array(
 				'#type' => 'details',
-				'#title' => t('App Details'),
+				'#title' => $this->t('App Details'),
 				'#open' => TRUE,
 				'table__app_details' => array(
 					'#type' => 'table',
@@ -198,7 +207,7 @@ class AppDetailsEditForm extends FormBase {
 			),
 			'details__api_products' => array(
 				'#type' => 'details',
-				'#title' => t('API Products'),
+				'#title' => $this->t('API Products'),
 				'#open' => TRUE,
 				'api_products' => $data_apiProducts,
 				'app_consumer_key' => array(
@@ -226,7 +235,7 @@ class AppDetailsEditForm extends FormBase {
 				'#type' => 'actions',
 				'submit' => array(
 					'#type' => 'submit',
-					'#value' => t('Save'),
+					'#value' => $this->t('Save'),
 					'#attributes' => array(
 						'class' => array(
 							'button',

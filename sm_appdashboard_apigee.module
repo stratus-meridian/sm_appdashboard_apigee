@@ -2,10 +2,7 @@
 
 /**
  * @file
- * Contains sm_appdashboard_apigee.module.
+ * Contains sm_appdashboard_apigee.module
  */
 
-/**
- * Implements hook_menu().
- */
 
