@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\sm_apps_dashboard\Form;
+namespace Drupal\sm_appdashboard_apigee\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\sm_apps_dashboard\AppsDashboardStorage;
+use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\apigee_edge\SDKConnectorInterface;

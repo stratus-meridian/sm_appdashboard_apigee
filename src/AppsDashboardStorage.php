@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\sm_apps_dashboard;
+namespace Drupal\sm_appdashboard_apigee;
 
 use Drupal\apigee_edge\Entity\ApiProductInterface;
 

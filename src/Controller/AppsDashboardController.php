@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\sm_apps_dashboard\Controller;
+namespace Drupal\sm_appdashboard_apigee\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\sm_apps_dashboard\AppsDashboardStorage;
+use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
 use Drupal\Core\Url;
 
 /**
