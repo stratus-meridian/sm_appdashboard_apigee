@@ -1,0 +1,35 @@
+apps_dashboard.list:
+  path: '/admin/config/apigee-edge/apps-dashboard'
+  defaults:
+    _controller: '\Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController::listApps'
+    _title: 'Apps Dashboard'
+  requirements:
+    _permission: 'administer apigee edge'
+
+apps_dashboard.view:
+  path: '/admin/config/apigee-edge/apps-dashboard/{apptype}/{appid}'
+  defaults:
+    _controller: '\Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController::viewApp'
+    _title: 'View App Details'
+  requirements:
+    _permission: 'administer apigee edge'
+  options:
+    parameters:
+      apptype:
+        type: apptype
+      appid:
+        type: appid
+
+apps_dashboard.edit:
+  path: '/admin/config/apigee-edge/apps-dashboard/{apptype}/{appid}/edit'
+  defaults:
+    _form: '\Drupal\sm_appdashboard_apigee\Form\AppDetailsEditForm'
+    _title: 'Edit App Details'
+  requirements:
+    _permission: 'administer apigee edge'
+  options:
+    parameters:
+      apptype:
+        type: apptype
+      appid:
+        type: appid

@@ -1,0 +1,6 @@
+apigee_edge.apps_dashboard:
+  title: 'Apps Dashboard'
+  description: 'Display list of Apps'
+  parent: system.admin_config_edge
+  route_name: apps_dashboard.list
+  weight: 10
