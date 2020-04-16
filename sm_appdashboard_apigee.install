@@ -35,9 +35,7 @@ function sm_appdashboard_apigee_requirements($phase) {
   $requirements = [];
 
   if ($phase === 'install' || $phase === 'runtime') {
-    /**
-     * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-     */
+    /* @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
     $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
 
     try {
@@ -62,9 +60,7 @@ function sm_appdashboard_apigee_requirements($phase) {
  * Implements hook_install().
  */
 function sm_appdashboard_apigee_install() {
-  /**
-   * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-   */
+  /* @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
   $sdk_connector->testConnection();
 
