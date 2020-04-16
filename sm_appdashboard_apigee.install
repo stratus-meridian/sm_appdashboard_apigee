@@ -1,18 +1,17 @@
 <?php
 
 /**
- * Stratus Meridian Apps Dashboard
+ * @file
  * Copyright (C) 2020  Stratus Meridian LLC
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details.
  *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
@@ -32,61 +31,61 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * Implements hook_requirements().
  */
 function sm_appdashboard_apigee_requirements($phase) {
-	$requirements = [];
+  $requirements = [];
 
-	if ($phase === 'install' || $phase === 'runtime') {
-		/**
-		 * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-		 */
-		$sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+  if ($phase === 'install' || $phase === 'runtime') {
+    /**
+     * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+     */
+    $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
 
-		try {
-			$sdk_connector->testConnection();
-		} catch (\Exception $exception) {
-			$requirements['apigee_edge_connection_error'] = [
-				'title' => t('Apigee Edge'),
-				'value' => $exception->getMessage(),
-				'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
-					':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
-				]),
-				'severity' => REQUIREMENT_WARNING,
-			];
-		}
-	}
+    try {
+      $sdk_connector->testConnection();
+    } catch (\Exception $exception) {
+      $requirements['apigee_edge_connection_error'] = [
+        'title' => t('Apigee Edge'),
+        'value' => $exception->getMessage(),
+        'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+          ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
+        ]),
+        'severity' => REQUIREMENT_WARNING,
+      ];
+    }
+  }
 
-	return $requirements;
+  return $requirements;
 }
 
 /**
  * Implements hook_install().
  */
 function sm_appdashboard_apigee_install() {
-	/**
-	 * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
-	 */
-	$sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
-	$sdk_connector->testConnection();
+  /**
+   * @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector
+   */
+  $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
+  $sdk_connector->testConnection();
 
-	try {
-		$path = Url::fromRoute('apps_dashboard.list', [])->toString();
+  try {
+    $path = Url::fromRoute('apps_dashboard.list', [])->toString();
 
-		$sync_path = Url::fromRoute('apigee_edge.settings.developer.sync', []);
-		$sync_text = t('Apigee Edge Developer Sync');
+    $sync_path = Url::fromRoute('apigee_edge.settings.developer.sync', []);
+    $sync_text = t('Apigee Edge Developer Sync');
 
-		$sync_link = Link::fromTextAndUrl($sync_text, $sync_path)->toString();
+    $sync_link = Link::fromTextAndUrl($sync_text, $sync_path)->toString();
 
-		drupal_set_message(t("You need to run the Developer Sync from the Apigee Edge developer settings page. To do this, please click: @link!", ['@link!' => $sync_link]), 'warning');
+    drupal_set_message(t("You need to run the Developer Sync from the Apigee Edge developer settings page. To do this, please click: @link!", ['@link!' => $sync_link]), 'warning');
 
-		$response = new RedirectResponse($path);
-		$response->send();
-	} catch (\Exception $exception) {
-		$requirements['apigee_edge_connection_error'] = [
-			'title' => t('Apigee Edge'),
-			'value' => $exception->getMessage(),
-			'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
-				':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
-			]),
-			'severity' => REQUIREMENT_WARNING,
-		];
-	}
+    $response = new RedirectResponse($path);
+    $response->send();
+  } catch (\Exception $exception) {
+    $requirements['apigee_edge_connection_error'] = [
+      'title' => t('Apigee Edge'),
+      'value' => $exception->getMessage(),
+      'description' => t('Cannot connect to Apigee Edge server. You have either given wrong credential details or the Apigee Edge server is unreachable. Visit the <a href=":url">Apigee Edge general settings</a> page to get more information.', [
+        ':url' => Url::fromRoute('apigee_edge.settings', ['destination' => 'admin/reports/status'])->toString(),
+      ]),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
 }
