@@ -22,8 +22,7 @@ namespace Drupal\sm_appdashboard_apigee;
  */
 
 /**
- * @file
- * Defines AppsDashboardStorage class.
+ * Provides useful tasks and functions.
  */
 class AppsDashboardStorage {
 

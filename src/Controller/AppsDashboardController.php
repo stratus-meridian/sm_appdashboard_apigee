@@ -27,8 +27,7 @@ use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
 use Drupal\Core\Url;
 
 /**
- * @file
- * Defines AppsDashboardController class.
+ * Controller for the Apps Dashboard view and list pages.
  */
 class AppsDashboardController extends ControllerBase {
 

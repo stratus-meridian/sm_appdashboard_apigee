@@ -38,8 +38,7 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
 
 /**
- * @file
- * Defines AppDetailsEditForm class.
+ * Provides a form to edit the App Details and change API Products status.
  */
 class AppDetailsEditForm extends FormBase {
 
@@ -298,7 +297,7 @@ class AppDetailsEditForm extends FormBase {
         // Open Developer App Credentials' Controller.
         $devAppCredentialsController = new DeveloperAppCredentialController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $form_state->getValue('app_internal_name'), $this->connector->getClient());
 
-        // Set/save the new status of API Products associated with this Developer App.
+        // Set/save the new status of API Products.
         foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? DeveloperAppCredentialController::STATUS_APPROVE : DeveloperAppCredentialController::STATUS_REVOKE);
           $devAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
@@ -342,7 +341,7 @@ class AppDetailsEditForm extends FormBase {
           $this->connector->getClient()
         );
 
-        // Set/save the new status of API Products associated with this Company App.
+        // Set/save the new status of API Products.
         foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? CompanyAppCredentialController::STATUS_APPROVE : CompanyAppCredentialController::STATUS_REVOKE);
           $compAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
