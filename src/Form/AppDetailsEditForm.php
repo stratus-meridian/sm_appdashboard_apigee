@@ -1,24 +1,25 @@
 <?php
 
+namespace Drupal\sm_appdashboard_apigee\Form;
+
 /**
  * @file
- * Copyright (C) 2020  Stratus Meridian LLC
+ * Copyright (C) 2020  Stratus Meridian LLC.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software Foundation;
- * either version 2 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
- *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-namespace Drupal\sm_appdashboard_apigee\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -40,7 +41,9 @@ use Apigee\Edge\Exception\ServerErrorException;
  * @file
  * Defines AppDetailsEditForm class.
  */
+
 class AppDetailsEditForm extends FormBase {
+
   /**
    * The SDK connector service.
    *
@@ -74,6 +77,9 @@ class AppDetailsEditForm extends FormBase {
     return 'appdetails__edit';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state, $apptype = NULL, $appid = NULL) {
     try {
       $this->connector->testConnection();
@@ -89,9 +95,9 @@ class AppDetailsEditForm extends FormBase {
       return new RedirectResponse(Drupal::url('apps_dashboard.list'));
     }
 
-    $appDetails = array();
+    $appDetails = [];
 
-    //Load App Deails
+    // Load App Details.
     $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
@@ -100,156 +106,159 @@ class AppDetailsEditForm extends FormBase {
 
       if ($ownerEntity) {
         $appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? $this->t('yes') : $this->t('no'));
-      } else {
+      }
+      else {
         $appOwnerActive = $this->t('no');
       }
 
-      //Set Developer Apps email address data
+      // Set Developer Apps email address data.
       if ($app->getOwnerId()) {
         if ($ownerEntity) {
           $appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
         }
-      } else {
+      }
+      else {
         $appDeveloperEmail = $app->getCreatedBy();
       }
 
       $appCompany = '';
-    } else {
+    }
+    else {
       $appDeveloperEmail = '';
 
-      //Set Team Apps company name
+      // Set Team Apps company name.
       $appCompany = $app->getCompanyName();
     }
 
-    //Get App Credentials and API Products
+    // Get App Credentials and API Products.
     $appCredentials = $app->getCredentials();
     $apiProducts = AppsDashboardStorage::getApiProducts($app);
 
-    //Get App Overall Status
+    // Get App Overall Status.
     $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
 
-    $data_apiProducts = array();
+    $data_apiProducts = [];
 
-    //Get API Products
+    //Get API Products.
     $i = 0;
-    foreach($apiProducts as $apiProduct) {
-      $data_apiProducts['selectbox_products_'.$i] = array(
+    foreach ($apiProducts as $apiProduct) {
+      $data_apiProducts['selectbox_products_'.$i] = [
         '#type' => 'select',
         '#title' => $apiProduct[0],
         '#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
-        '#options' => array(
+        '#options' => [
           'approved' => $this->t('approved'),
           'revoked'=> $this->t('revoked'),
-        ),
+        ],
         '#default_value' => $apiProduct[1],
-      );
+      ];
       $i++;
     }
 
-    //Plotting App Details into Table
-    $data = array(
-      array(
-        array('data' => 'App Type', 'header' => TRUE),
+    // Plotting App Details into Table.
+    $data = [
+      [
+        ['data' => 'App Type', 'header' => TRUE],
         $apptype,
-      ),
-      array(
-        array('data' => 'App Display Name', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'App Display Name', 'header' => TRUE],
         $app->getDisplayName(),
-      ),
-      array(
-        array('data' => 'Internal Name', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Internal Name', 'header' => TRUE],
         $app->getName(),
-      ),
-      array(
-        array('data' => 'Developer Email Address', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Developer Email Address', 'header' => TRUE],
         $appDeveloperEmail,
-      ),
-      array(
-        array('data' => 'Company', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Company', 'header' => TRUE],
         $appCompany,
-      ),
-      array(
-        array('data' => 'Overall App Status', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Overall App Status', 'header' => TRUE],
         $appOverallStatus,
-      ),
-      array(
-        array('data' => 'Active User in the site?', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Active User in the site?', 'header' => TRUE],
         $appOwnerActive,
-      ),
-      array(
-        array('data' => 'App Date/Time Created', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'App Date/Time Created', 'header' => TRUE],
         $app->getCreatedAt()->format('l, M. d, Y H:i'),
-      ),
-      array(
-        array('data' => 'App Date/Time Modified', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'App Date/Time Modified', 'header' => TRUE],
         $app->getLastModifiedAt()->format('l, M. d, Y H:i'),
-      ),
-      array(
-        array('data' => 'Modified by', 'header' => TRUE),
+      ],
+      [
+        ['data' => 'Modified by', 'header' => TRUE],
         $app->getLastModifiedBy(),
-      ),
-    );
+      ],
+    ];
 
-    $form = array(
-      'details__app_details' => array(
+    $form = [
+      'details__app_details' => [
         '#type' => 'details',
         '#title' => $this->t('App Details'),
         '#open' => TRUE,
-        'table__app_details' => array(
+        'table__app_details' => [
           '#type' => 'table',
           '#rows' => $data,
-        ),
-      ),
-      'details__api_products' => array(
+        ],
+      ],
+      'details__api_products' => [
         '#type' => 'details',
         '#title' => $this->t('API Products'),
         '#open' => TRUE,
         'api_products' => $data_apiProducts,
-        'app_consumer_key' => array(
+        'app_consumer_key' => [
           '#type' => 'hidden',
           '#value' => $appCredentials[0]->getConsumerKey(),
-        ),
-        'app_developer_email' => array(
+        ],
+        'app_developer_email' => [
           '#type' => 'hidden',
           '#value' => $appDeveloperEmail,
-        ),
-        'app_company' => array(
+        ],
+        'app_company' => [
           '#type' => 'hidden',
           '#value' => $appCompany,
-        ),
-        'app_internal_name' => array(
+        ],
+        'app_internal_name' => [
           '#type' => 'hidden',
           '#value' => rawurlencode($app->getName()),
-        ),
-        'app_entity_type' => array(
+        ],
+        'app_entity_type' => [
           '#type' => 'hidden',
           '#value' => $apptype,
-        ),
-      ),
-      'actions' => array(
+        ],
+      ],
+      'actions' => [
         '#type' => 'actions',
-        'submit' => array(
+        'submit' => [
           '#type' => 'submit',
           '#value' => $this->t('Save'),
-          '#attributes' => array(
-            'class' => array(
+          '#attributes' => [
+            'class' => [
               'button',
-              'button--primary'
-            ),
-          ),
-        ),
-        'cancel' => array(
+              'button--primary',
+            ],
+          ],
+        ],
+        'cancel' => [
           '#type' => 'link',
           '#title' => 'Cancel',
-          '#attributes' => array(
-            'class' => array(
-              'button'
-            ),
-          ),
+          '#attributes' => [
+            'class' => [
+              'button',
+            ],
+          ],
           '#url' => Url::fromRoute('apps_dashboard.list'),
-        ),
-      ),
-    );
+        ],
+      ],
+    ];
 
     return $form;
   }
@@ -265,61 +274,67 @@ class AppDetailsEditForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    //Get API Products (Name and selected Status)
+    // Get API Products (Name and selected Status).
     $FormSelectBoxApiProducts = $form['details__api_products']['api_products'];
 
-    $val_apiproducts = array();
+    $val_apiproducts = [];
 
-    //Array push API Products to $val_apiproducts
-    foreach($FormSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
+    // Array push API Products to $val_apiproducts.
+    foreach ($FormSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
       if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
-        array_push($val_apiproducts, array(
+        array_push($val_apiproducts, [
           'apiproducts_name' => $selectboxValue['#title'],
           'apiproducts_status' => $form_state->getValue($selectboxKey),
-        ));
+        ]);
       }
     }
 
     if ($form_state->getValue('app_entity_type') == 'developer_app') {
-      //Open New Developer App Controller
+      // Open New Developer App Controller.
       $devAppController = new DeveloperAppController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $this->connector->getClient());
 
-      //Create a try and catch to test the connection of Developer App Controller
+      // Create a try and catch to test the connection of Developer App Controller.
       try {
-        //Open Developer App Credentials' Controller
+        // Open Developer App Credentials' Controller.
         $devAppCredentialsController = new DeveloperAppCredentialController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $form_state->getValue('app_internal_name'), $this->connector->getClient());
 
-        //Set and save the new status of API Products associated with the this Developer App
-        foreach($val_apiproducts as $val_apiproduct) {
+        // Set/save the new status of API Products associated with the this Developer App.
+        foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? DeveloperAppCredentialController::STATUS_APPROVE : DeveloperAppCredentialController::STATUS_REVOKE);
           $devAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
         }
 
-        //Close all open controllers
+        // Close all open controllers.
         $devAppCredentialsController = NULL;
         $devAppController = NULL;
 
         drupal_set_message(t('App Details are successfully updated.'), 'status');
         $form_state->setRedirect('apps_dashboard.list');
-      } catch (ClientErrorException $err) {
+      }
+      catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
           drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
-        } else {
+        }
+        else {
           drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
         }
-      } catch (ServerErrorException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
-      } catch (ApiRequestException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
-      } catch (ApiException $err) {
+      }
+      catch (ServerErrorException $err) {
         drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
       }
-    } else {
-      //Open New Company App Controller
+      catch (ApiRequestException $err) {
+        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+      }
+      catch (ApiException $err) {
+        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+      }
+    }
+    else {
+      // Open New Company App Controller.
       $compAppController = new CompanyAppController($this->connector->getOrganization(), $form_state->getValue('app_company'), $this->connector->getClient());
 
       try {
-        //Open Company App Credentials' Controller
+        // Open Company App Credentials' Controller.
         $compAppCredentialsController = new CompanyAppCredentialController(
           $this->connector->getOrganization(),
           $form_state->getValue('app_company'),
@@ -327,31 +342,37 @@ class AppDetailsEditForm extends FormBase {
           $this->connector->getClient()
         );
 
-        //Set and save the new status of API Products associated with the this Company App
-        foreach($val_apiproducts as $val_apiproduct) {
+        // Set/save the new status of API Products associated with the this Company App.
+        foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? CompanyAppCredentialController::STATUS_APPROVE : CompanyAppCredentialController::STATUS_REVOKE);
           $compAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
         }
 
-        //Close all open controllers
+        // Close all open controllers.
         $compAppCredentialsController = NULL;
         $compAppController = NULL;
 
         drupal_set_message(t('App Details are successfully updated.'), 'status');
         $form_state->setRedirect('apps_dashboard.list');
-      } catch (ClientErrorException $err) {
+      }
+      catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
           drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
-        } else {
+        }
+        else {
           drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
         }
-      } catch (ServerErrorException $err) {
+      }
+      catch (ServerErrorException $err) {
         drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
-      } catch (ApiRequestException $err) {
+      }
+      catch (ApiRequestException $err) {
         drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
-      } catch (ApiException $err) {
+      }
+      catch (ApiException $err) {
         drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
       }
     }
   }
+
 }

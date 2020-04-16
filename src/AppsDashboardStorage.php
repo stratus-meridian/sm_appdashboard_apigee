@@ -1,33 +1,38 @@
 <?php
 
+namespace Drupal\sm_appdashboard_apigee;
+
 /**
  * @file
- * Copyright (C) 2020  Stratus Meridian LLC
+ * Copyright (C) 2020  Stratus Meridian LLC.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software Foundation;
- * either version 2 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
- * License for more details.
- *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-namespace Drupal\sm_appdashboard_apigee;
-
 /**
  * @file
  * Defines AppsDashboardStorage class.
  */
+
 class AppsDashboardStorage {
-  //Load Labels
+
+  /**
+   * {@inheritdoc}
+   */
   public static function labels() {
-    $labels = array(
+    $labels = [
       'labelDisplayName' => t('App Display Name'),
       'labelEmail' => t('Developer Email'),
       'labelCompany' => t('Company'),
@@ -36,14 +41,16 @@ class AppsDashboardStorage {
       'labelDateTimeCreated' => t('App Date/Time Created'),
       'labelDateTimeModified' => t('App Date/Time Modified'),
       'labelOperations' => t('Operations'),
-    );
+    ];
 
     return $labels;
   }
 
-  //Retrieve Apps Details (Developer and Team Apps)
+  /**
+   * {@inheritdoc}
+   */
   public static function getAllAppDetails() {
-    $apps = array();
+    $apps = [];
 
     $entity = \Drupal::entityTypeManager();
 
@@ -58,33 +65,40 @@ class AppsDashboardStorage {
     return $apps;
   }
 
-  //Retrieve Apps Details (by ID)
+  /**
+   * {@inheritdoc}
+   */
   public static function getAppDetailsById($type, $id) {
     $entity = \Drupal::entityTypeManager();
 
-    if (isset($type) && isset($id))
+    if (isset($type) && isset($id)) {
       $app = $entity->getStorage($type)->load($id);
+    }
 
     return $app;
   }
 
-  // Retrieve API Products
+  /**
+   * {@inheritdoc}
+   */
   public static function getApiProducts($app) {
-    $data_apiProducts = array();
+    $data_apiProducts = [];
 
     $appCredentials = $app->getCredentials();
 
-    foreach($appCredentials[0]->getApiProducts() as $apiProduct) {
-      $data_apiProducts[] = array(
+    foreach ($appCredentials[0]->getApiProducts() as $apiProduct) {
+      $data_apiProducts[] = [
         $apiProduct->getApiProduct(),
         $apiProduct->getStatus(),
-      );
+      ];
     }
 
     return $data_apiProducts;
   }
 
-  //Retrieve Overall Status
+  /**
+   * {@inheritdoc}
+   */
   public static function getOverallStatus($app) {
     $appCredentials = $app->getCredentials();
 
@@ -94,11 +108,11 @@ class AppsDashboardStorage {
     static $statuses;
 
     if (!isset($statuses)) {
-      $statuses = array(
+      $statuses = [
         'approved' => 0,
         'pending' => 1,
-        'revoked' => 2
-      );
+        'revoked' => 2,
+      ];
     }
 
     $appStatus = (array_key_exists($app->getStatus(), $statuses) ? $statuses[$app->getStatus()] : 0);
@@ -124,8 +138,12 @@ class AppsDashboardStorage {
     return $arrStatusSearch;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function startsWith($string, $startString) {
     $len = strlen($startString);
     return (substr($string, 0, $len) === $startString);
   }
+
 }
