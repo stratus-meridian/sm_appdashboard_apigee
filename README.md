@@ -1,6 +1,6 @@
 # Stratus Meridian Apps Dashboard
 
-Provides an application dashboard to approve or revoke keys connected to Apigee edge server.
+Provides a dashboard to approve/revoke keys connected to Apigee edge server.
 
 
 # Installation
