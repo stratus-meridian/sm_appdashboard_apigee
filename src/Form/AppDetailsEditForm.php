@@ -10,12 +10,12 @@ namespace Drupal\sm_appdashboard_apigee\Form;
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -41,7 +41,6 @@ use Apigee\Edge\Exception\ServerErrorException;
  * @file
  * Defines AppDetailsEditForm class.
  */
-
 class AppDetailsEditForm extends FormBase {
 
   /**
@@ -83,7 +82,8 @@ class AppDetailsEditForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $apptype = NULL, $appid = NULL) {
     try {
       $this->connector->testConnection();
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
         ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
       ]));
@@ -101,7 +101,7 @@ class AppDetailsEditForm extends FormBase {
     $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
-      //Set Developer Apps owner active data
+      // Set Developer Apps owner active data.
       $ownerEntity = $app->getOwner();
 
       if ($ownerEntity) {
@@ -139,16 +139,16 @@ class AppDetailsEditForm extends FormBase {
 
     $data_apiProducts = [];
 
-    //Get API Products.
+    // Get API Products.
     $i = 0;
     foreach ($apiProducts as $apiProduct) {
-      $data_apiProducts['selectbox_products_'.$i] = [
+      $data_apiProducts['selectbox_products_' . $i] = [
         '#type' => 'select',
         '#title' => $apiProduct[0],
         '#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
         '#options' => [
           'approved' => $this->t('approved'),
-          'revoked'=> $this->t('revoked'),
+          'revoked' => $this->t('revoked'),
         ],
         '#default_value' => $apiProduct[1],
       ];
@@ -275,12 +275,12 @@ class AppDetailsEditForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Get API Products (Name and selected Status).
-    $FormSelectBoxApiProducts = $form['details__api_products']['api_products'];
+    $formSelectBoxApiProducts = $form['details__api_products']['api_products'];
 
     $val_apiproducts = [];
 
     // Array push API Products to $val_apiproducts.
-    foreach ($FormSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
+    foreach ($formSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
       if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
         array_push($val_apiproducts, [
           'apiproducts_name' => $selectboxValue['#title'],
@@ -293,12 +293,12 @@ class AppDetailsEditForm extends FormBase {
       // Open New Developer App Controller.
       $devAppController = new DeveloperAppController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $this->connector->getClient());
 
-      // Create a try and catch to test the connection of Developer App Controller.
+      // Create a try/catch to test the connection of DevApp Controller.
       try {
         // Open Developer App Credentials' Controller.
         $devAppCredentialsController = new DeveloperAppCredentialController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $form_state->getValue('app_internal_name'), $this->connector->getClient());
 
-        // Set/save the new status of API Products associated with the this Developer App.
+        // Set/save the new status of API Products associated with this Developer App.
         foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? DeveloperAppCredentialController::STATUS_APPROVE : DeveloperAppCredentialController::STATUS_REVOKE);
           $devAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
@@ -313,20 +313,20 @@ class AppDetailsEditForm extends FormBase {
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
+          drupal_set_message(t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
         }
         else {
-          drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+          drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiRequestException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
     else {
@@ -342,7 +342,7 @@ class AppDetailsEditForm extends FormBase {
           $this->connector->getClient()
         );
 
-        // Set/save the new status of API Products associated with the this Company App.
+        // Set/save the new status of API Products associated with this Company App.
         foreach ($val_apiproducts as $val_apiproduct) {
           $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? CompanyAppCredentialController::STATUS_APPROVE : CompanyAppCredentialController::STATUS_REVOKE);
           $compAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
@@ -357,20 +357,20 @@ class AppDetailsEditForm extends FormBase {
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message(t('There is an error encountered. Error Code: ') . $err->getEdgeErrorCode(), 'error');
+          drupal_set_message(t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
         }
         else {
-          drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+          drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiRequestException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code: ') . $err, 'status');
+        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
   }
