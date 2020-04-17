@@ -74,9 +74,6 @@ class AppsDashboardController extends ControllerBase {
         $appCompany = $app->getCompanyName();
       }
 
-      // Get App Credentials.
-      $appCredentials = $app->getCredentials();
-
       // Get App Overall Status.
       $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
 
@@ -141,11 +138,11 @@ class AppsDashboardController extends ControllerBase {
    */
   public function viewApp($apptype, $appid) {
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message(t('There are errors encountered upon viewing the App Details.'), 'error');
-      return new RedirectResponse(Drupal::url('apps_dashboard.list'));
+      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $path = Url::fromRoute('apps_dashboard.list', [])->toString();
+      $response = new RedirectResponse($path);
+      $response->send();
     }
-
-    $appDetails = [];
 
     // Load App Deails.
     $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
@@ -180,7 +177,6 @@ class AppsDashboardController extends ControllerBase {
     }
 
     // Get App Credentials and API Products.
-    $appCredentials = $app->getCredentials();
     $apiProducts = AppsDashboardStorage::getApiProducts($app);
 
     // Get App Overall Status.
@@ -251,7 +247,7 @@ class AppsDashboardController extends ControllerBase {
     $display = [
       'details__app_details' => [
         '#type' => 'details',
-        '#title' => t('App Details'),
+        '#title' => $this->t('App Details'),
         '#open' => TRUE,
         'table__app_details' => [
           '#type' => 'table',
@@ -260,7 +256,7 @@ class AppsDashboardController extends ControllerBase {
       ],
       'details__api_products' => [
         '#type' => 'details',
-        '#title' => t('API Products'),
+        '#title' => $this->t('API Products'),
         '#open' => TRUE,
         'apiProducts' => [
           '#type' => 'table',
@@ -274,7 +270,7 @@ class AppsDashboardController extends ControllerBase {
       ],
       'edit__action' => [
         '#type' => 'link',
-        '#title' => t('Edit'),
+        '#title' => $this->t('Edit'),
         '#attributes' => [
           'class' => [
             'button',
@@ -285,7 +281,7 @@ class AppsDashboardController extends ControllerBase {
       ],
       'list__action' => [
         '#type' => 'link',
-        '#title' => t('Back'),
+        '#title' => $this->t('Back'),
         '#attributes' => [
           'class' => [
             'button',

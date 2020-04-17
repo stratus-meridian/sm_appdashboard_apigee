@@ -90,11 +90,11 @@ class AppDetailsEditForm extends FormBase {
     }
 
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message(t('There are errors encountered upon viewing the App Details.'), 'error');
-      return new RedirectResponse(Drupal::url('apps_dashboard.list'));
+      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $path = Url::fromRoute('apps_dashboard.list', [])->toString();
+      $response = new RedirectResponse($path);
+      $response->send();
     }
-
-    $appDetails = [];
 
     // Load App Details.
     $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
@@ -307,25 +307,25 @@ class AppDetailsEditForm extends FormBase {
         $devAppCredentialsController = NULL;
         $devAppController = NULL;
 
-        drupal_set_message(t('App Details are successfully updated.'), 'status');
+        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message(t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
         }
         else {
-          drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiRequestException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
     else {
@@ -351,25 +351,25 @@ class AppDetailsEditForm extends FormBase {
         $compAppCredentialsController = NULL;
         $compAppController = NULL;
 
-        drupal_set_message(t('App Details are successfully updated.'), 'status');
+        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message(t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
         }
         else {
-          drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiRequestException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
       catch (ApiException $err) {
-        drupal_set_message(t('There is an error encountered. Error Code:') . $err, 'status');
+        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
   }
