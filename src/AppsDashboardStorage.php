@@ -55,10 +55,10 @@ class AppsDashboardStorage {
     $devApps_storage = $entity->getStorage('developer_app');
     $devApps = $devApps_storage->loadMultiple();
 
-    $teamApps_storage = $entity->getStorage('team_app');
-    $teamApps = $teamApps_storage->loadMultiple();
-
-    $apps = array_merge($devApps, $teamApps);
+    if ($teamApps_storage = $entity->getStorage('team_app')) {
+      $teamApps = $teamApps_storage->loadMultiple();
+      $apps = array_merge($devApps, $teamApps);
+    }
 
     return $apps;
   }
