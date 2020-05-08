@@ -21,15 +21,31 @@ namespace Drupal\sm_appdashboard_apigee;
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+
 /**
  * Provides useful tasks and functions.
  */
-class AppsDashboardStorage {
+class AppsDashboardStorageService implements AppsDashboardStorageServiceInterface {
+
+  /**
+   * Drupal\Core\Entity\EntityTypeManagerInterface definition.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs a new DefaultService object.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
 
   /**
    * {@inheritdoc}
    */
-  public static function labels() {
+  public function labels() {
     $labels = [
       'labelDisplayName' => t('App Display Name'),
       'labelEmail' => t('Developer Email'),
@@ -47,15 +63,13 @@ class AppsDashboardStorage {
   /**
    * {@inheritdoc}
    */
-  public static function getAllAppDetails() {
+  public function getAllAppDetails() {
     $apps = [];
 
-    $entity = \Drupal::entityTypeManager();
-
-    $devApps_storage = $entity->getStorage('developer_app');
+    $devApps_storage = $this->entityTypeManager->getStorage('developer_app');
     $devApps = $devApps_storage->loadMultiple();
 
-    if ($teamApps_storage = $entity->getStorage('team_app')) {
+    if ($teamApps_storage = $this->entityTypeManager->getStorage('team_app')) {
       $teamApps = $teamApps_storage->loadMultiple();
       $apps = array_merge($devApps, $teamApps);
     }
@@ -66,11 +80,10 @@ class AppsDashboardStorage {
   /**
    * {@inheritdoc}
    */
-  public static function getAppDetailsById($type, $id) {
-    $entity = \Drupal::entityTypeManager();
+  public function getAppDetailsById($type, $id) {
 
     if (isset($type) && isset($id)) {
-      $app = $entity->getStorage($type)->load($id);
+      $app = $this->entityTypeManager->getStorage($type)->load($id);
     }
 
     return $app;
@@ -79,7 +92,7 @@ class AppsDashboardStorage {
   /**
    * {@inheritdoc}
    */
-  public static function getApiProducts($app) {
+  public function getApiProducts($app) {
     $data_apiProducts = [];
 
     $appCredentials = $app->getCredentials();
@@ -97,7 +110,7 @@ class AppsDashboardStorage {
   /**
    * {@inheritdoc}
    */
-  public static function getOverallStatus($app) {
+  public function getOverallStatus($app) {
     $appCredentials = $app->getCredentials();
 
     $appStatus = $app->getStatus();
@@ -139,7 +152,7 @@ class AppsDashboardStorage {
   /**
    * {@inheritdoc}
    */
-  public static function startsWith($string, $startString) {
+  public function startsWith($string, $startString) {
     $len = strlen($startString);
     return (substr($string, 0, $len) === $startString);
   }
