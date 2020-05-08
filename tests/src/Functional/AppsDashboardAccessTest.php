@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\sm_appdashboard_apigee\Functional;
 
+use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -37,6 +38,7 @@ class AppsDashboardAccessTest extends BrowserTestBase {
 
     // Create and log in an administrative apigee edge user.
     $this->adminUser = $this->drupalCreateUser([
+      'administer site configuration',
       'administer apigee edge',
     ]);
     $this->drupalLogin($this->adminUser);
@@ -46,7 +48,8 @@ class AppsDashboardAccessTest extends BrowserTestBase {
    * Test to access the apps dashboard page.
    */
    public function testAppsDashboardPageAccess() {
-     $this->drupalGet('/admin/config/apigee-edge/apps-dashboard');
+     //$this->drupalGet('/admin/config');
+     $this->drupalGet(Url::fromRoute('<front>'));
      $this->assertSession()->statusCodeEquals(200);
    }
 }
