@@ -23,8 +23,8 @@ namespace Drupal\sm_appdashboard_apigee\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller for the Apps Dashboard view and list pages.
@@ -32,14 +32,30 @@ use Drupal\Core\Url;
 class AppsDashboardController extends ControllerBase {
 
   /**
+   * AppsDashboardStorageServiceInterface definition.
+   *
+   * @var Drupal\sm_appdashboard_apigee\AppsDashboardStorageServiceInterface
+   */
+  protected $appsDashboardStorage;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $instance = parent::create($container);
+    $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    return $instance;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function listApps() {
     // Define Table Headers.
-    $labelAppDetails = AppsDashboardStorage::labels();
+    $labelAppDetails = $this->appsDashboardStorage->labels();
 
     // Retrieve Apps Details (Developer and Team Apps).
-    $apps = AppsDashboardStorage::getAllAppDetails();
+    $apps = $this->appsDashboardStorage->getAllAppDetails();
 
     // Pass App Details into variables.
     $appDetails = [];
@@ -75,7 +91,7 @@ class AppsDashboardController extends ControllerBase {
       }
 
       // Get App Overall Status.
-      $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+      $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
       // Setup actions (dropdown).
       $view_url = Url::fromRoute('apps_dashboard.view', [
@@ -145,7 +161,7 @@ class AppsDashboardController extends ControllerBase {
     }
 
     // Load App Deails.
-    $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
+    $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
       // Set Developer Apps owner active data.
@@ -177,10 +193,10 @@ class AppsDashboardController extends ControllerBase {
     }
 
     // Get App Credentials and API Products.
-    $apiProducts = AppsDashboardStorage::getApiProducts($app);
+    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
     // Get App Overall Status.
-    $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
     $data_apiProducts = [];
 

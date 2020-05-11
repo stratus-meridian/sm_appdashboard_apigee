@@ -21,13 +21,6 @@ namespace Drupal\sm_appdashboard_apigee\Form;
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Apigee\Edge\Api\Management\Controller\CompanyAppController;
@@ -36,6 +29,11 @@ use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form to edit the App Details and change API Products status.
@@ -47,25 +45,23 @@ class AppDetailsEditForm extends FormBase {
    *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
-  private $connector;
+  protected $connector;
 
   /**
-   * Constructs a AppDetailsEditForm.
+   * AppsDashboardStorageServiceInterface definition.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
-   *   The SDK connector service.
+   * @var Drupal\sm_appdashboard_apigee\AppsDashboardStorageServiceInterface
    */
-  public function __construct(SDKConnectorInterface $connector) {
-    $this->connector = $connector;
-  }
+  protected $appsDashboardStorage;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('apigee_edge.sdk_connector')
-    );
+    $instance = parent::create($container);
+    $instance->connector = $container->get('apigee_edge.sdk_connector');
+    $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    return $instance;
   }
 
   /**
@@ -97,7 +93,7 @@ class AppDetailsEditForm extends FormBase {
     }
 
     // Load App Details.
-    $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
+    $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
       // Set Developer Apps owner active data.
@@ -131,10 +127,10 @@ class AppDetailsEditForm extends FormBase {
 
     // Get App Credentials and API Products.
     $appCredentials = $app->getCredentials();
-    $apiProducts = AppsDashboardStorage::getApiProducts($app);
+    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
     // Get App Overall Status.
-    $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
     $data_apiProducts = [];
 
@@ -280,7 +276,7 @@ class AppDetailsEditForm extends FormBase {
 
     // Array push API Products to $val_apiproducts.
     foreach ($formSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
-      if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
+      if ($this->appsDashboardStorage->startsWith($selectboxKey, 'selectbox_products') == TRUE) {
         array_push($val_apiproducts, [
           'apiproducts_name' => $selectboxValue['#title'],
           'apiproducts_status' => $form_state->getValue($selectboxKey),
