@@ -24,7 +24,9 @@ namespace Drupal\sm_appdashboard_apigee\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Drupal\Core\Form\FormBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Controller for the Apps Dashboard view and list pages.
@@ -39,11 +41,27 @@ class AppsDashboardController extends ControllerBase {
   protected $appsDashboardStorage;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $formBuilder;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    $instance->formBuilder = $container->get('form_builder');
+    $instance->requestStack = $container->get('request_stack');
     return $instance;
   }
 
@@ -51,6 +69,11 @@ class AppsDashboardController extends ControllerBase {
    * {@inheritdoc}
    */
   public function listApps() {
+    if ($this->requestStack->getCurrentRequest()->get('search')) {
+      $searchKey = $this->requestStack->getCurrentRequest()->get('search');
+
+      kint($searchKey);
+    }
     // Define Table Headers.
     $labelAppDetails = $this->appsDashboardStorage->labels();
 
@@ -139,11 +162,14 @@ class AppsDashboardController extends ControllerBase {
       'appDetails' => $appDetails,
     ];
 
-    $form['table__apps_dashboard'] = [
-      '#type' => 'table',
-      '#header' => $arrApps['labelAppDetails'],
-      '#rows' => $arrApps['appDetails'],
-      '#empty' => $this->t('No data found'),
+    $form = [
+      'search__apps_dashboard' => $this->formBuilder->getForm('\Drupal\sm_appdashboard_apigee\Form\AppDetailsSearchForm'),
+      'table__apps_dashboard' => [
+        '#type' => 'table',
+        '#header' => $arrApps['labelAppDetails'],
+        '#rows' => $arrApps['appDetails'],
+        '#empty' => $this->t('No data found'),
+      ],
     ];
 
     return $form;
