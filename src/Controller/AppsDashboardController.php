@@ -185,7 +185,7 @@ class AppsDashboardController extends ControllerBase {
    */
   public function viewApp($apptype, $appid) {
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $this->messenger()->addError($this->t('There are errors encountered upon viewing the App Details.'));
       $path = Url::fromRoute('apps_dashboard.list', [])->toString();
       $response = new RedirectResponse($path);
       $response->send();

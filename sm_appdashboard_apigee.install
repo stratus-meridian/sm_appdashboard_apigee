@@ -72,7 +72,7 @@ function sm_appdashboard_apigee_install() {
 
     $sync_link = Link::fromTextAndUrl($sync_text, $sync_path)->toString();
 
-    drupal_set_message(t("You need to run the Developer Sync from the Apigee Edge developer settings page. To do this, please click: @link!", ['@link!' => $sync_link]), 'warning');
+    \Drupal::messenger()->addWarning(\Drupal::translation()->translate("You need to run the Developer Sync from the Apigee Edge developer settings page. To do this, please click: @link!", ['@link!' => $sync_link]));
 
     $response = new RedirectResponse($path);
     $response->send();
