@@ -31,6 +31,7 @@ use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use DrupalCore\Link;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -55,12 +56,20 @@ class AppDetailsEditForm extends FormBase {
   protected $appsDashboardStorage;
 
   /**
+   * The Messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->connector = $container->get('apigee_edge.sdk_connector');
     $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    $instance->messenger = $container->get('messenger');
     return $instance;
   }
 
@@ -79,14 +88,13 @@ class AppDetailsEditForm extends FormBase {
       $this->connector->testConnection();
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
-        ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
-      ]));
+      $link = Link::fromTextAndUrl($this->t('Apigee Edge connection settings'), Url::fromRoute('apigee_edge.settings'));
+      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that @link are correct.', ['@link' => $link]));
       return $form;
     }
 
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $this->messenger()->addError($this->t('There are errors encountered upon viewing the App Details.'));
       $path = Url::fromRoute('apps_dashboard.list', [])->toString();
       $response = new RedirectResponse($path);
       $response->send();
@@ -303,25 +311,25 @@ class AppDetailsEditForm extends FormBase {
         $devAppCredentialsController = NULL;
         $devAppController = NULL;
 
-        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
+        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
         }
         else {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiRequestException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
     }
     else {
@@ -347,25 +355,25 @@ class AppDetailsEditForm extends FormBase {
         $compAppCredentialsController = NULL;
         $compAppController = NULL;
 
-        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
+        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
         }
         else {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiRequestException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
   }
