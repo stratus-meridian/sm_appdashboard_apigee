@@ -69,16 +69,21 @@ class AppsDashboardController extends ControllerBase {
    * {@inheritdoc}
    */
   public function listApps() {
+    // Define if there is searchKey.
     if ($this->requestStack->getCurrentRequest()->get('search')) {
       $searchKey = $this->requestStack->getCurrentRequest()->get('search');
-
-      kint($searchKey);
     }
+
     // Define Table Headers.
     $labelAppDetails = $this->appsDashboardStorage->labels();
 
-    // Retrieve Apps Details (Developer and Team Apps).
-    $apps = $this->appsDashboardStorage->getAllAppDetails();
+    if (isset($searchKey)) {
+      $apps = $this->appsDashboardStorage->getAppDetailsByName($searchKey);
+    }
+    else {
+      // Retrieve Apps Details (Developer and Team Apps).
+      $apps = $this->appsDashboardStorage->getAllAppDetails();
+    }
 
     // Pass App Details into variables.
     $appDetails = [];

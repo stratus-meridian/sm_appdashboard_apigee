@@ -92,6 +92,25 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   /**
    * {@inheritdoc}
    */
+  public function getAppDetailsByName($appName) {
+    $apps = AppsDashboardStorageService::getAllAppDetails();
+
+    $app = [];
+
+    foreach($apps as $appKey => $appDetails) {
+      if ($appDetails->getName() == $appName) {
+        $app = [
+          $appDetails->id() => $appDetails
+        ];
+      }
+    }
+
+    return $app;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getApiProducts($app) {
     $data_apiProducts = [];
 

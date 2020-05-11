@@ -46,22 +46,38 @@ class AppDetailsSearchForm extends FormBase {
     $form = [
       '#method' => 'GET',
       '#token' => FALSE,
+      '#attached' => [
+        'library' => [
+          'sm_appdashboard_apigee/sm-appdashboard-apigee-css',
+        ],
+      ],
       'search' => [
         '#type' => 'search',
-        '#title' => $this->t('Search App Details'),
+        '#title' => $this->t('Search App Details using: [Internal Name]'),
         '#default_value' => $_GET['search'] ?? '',
       ],
       'actions' => [
-        '#prefix' => '<div class="form-actions js-form-wrapper form-wrapper">',
+        '#prefix' => '<div class="form-item form-actions js-form-wrapper form-wrapper">',
         '#suffix' => '</div>',
         'submit' => [
           '#type' => 'submit',
           '#value' => $this->t('Filter'),
           '#attributes' => [
-            'class' => ['form-actions',
-              'button', 'button--primary',
+            'class' => [
+              'button',
+              'button--primary',
             ],
           ],
+        ],
+        'cancel' => [
+          '#type' => 'link',
+          '#title' => $this->t('Clear'),
+          '#attributes' => [
+            'class' => [
+              'button',
+            ],
+          ],
+          '#url' => Url::fromRoute('apps_dashboard.list'),
         ],
       ],
     ];

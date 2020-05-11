@@ -1,0 +1,29 @@
+/**
+ * SM Apps Dashboard custom stylesheet
+ */
+
+/*** Search Form */
+form.smdp-appdetails-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+  border: 1px solid rgba(216,217,224,0.8);
+  border-radius: 2px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+form.smdp-appdetails-search-form .form-item {
+  margin: 0.75rem 0.5rem 0 0;
+}
+
+form.smdp-appdetails-search-form .form-item .button {
+  margin-bottom: 0;
+}
+
+form.smdp-appdetails-search-form .edit-actions.form-item > .button:last-child {
+  margin-right: 0;
+}
