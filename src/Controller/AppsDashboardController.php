@@ -78,7 +78,7 @@ class AppsDashboardController extends ControllerBase {
     $labelAppDetails = $this->appsDashboardStorage->labels();
 
     if (isset($searchKey)) {
-      $apps = $this->appsDashboardStorage->getAppDetailsByName($searchKey);
+      $apps = $this->appsDashboardStorage->searchByAppName($searchKey);
     }
     else {
       // Retrieve Apps Details (Developer and Team Apps).

@@ -52,7 +52,7 @@ interface AppsDashboardStorageServiceInterface {
    * @param string $appName
    *   The app name.
    */
-  public function getAppDetailsByName($appName);
+  public function searchByAppName($appName);
 
   /**
    * Returns the API product details from an app.
