@@ -47,6 +47,14 @@ interface AppsDashboardStorageServiceInterface {
   public function getAppDetailsById($type, $id);
 
   /**
+   * Returns app details using App Internal Name.
+   *
+   * @param string $appName
+   *   The app name.
+   */
+  public function searchByAppName($appName);
+
+  /**
    * Returns the API product details from an app.
    *
    * @param object $app
