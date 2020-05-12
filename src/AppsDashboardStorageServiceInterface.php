@@ -83,15 +83,25 @@ interface AppsDashboardStorageServiceInterface {
   public function startsWith($string, $startString);
 
   /**
-   * Returns a formatted tablerows implementing Sort.
+   * Returns a split array implementing Sort.
    *
-   * @param object $row
-   *   Array list of data.
-   * @param object $header
-   *   Array list of data.
+   * @param array $rows
+   *   Table rows which need sortable
+   * @param array $header
+   *   Table header
    * @param string $startString
    *   Specifies how to compare the array elements/items.
    */
   public function constructSort($rows, $header, $flag = SORT_STRING|SORT_FLAG_CASE);
+
+  /**
+   * Returns a split array implementing pager.
+   *
+   * @param array $items
+   *   Items which need split
+   * @param integer $num_page
+   *   How many items view in page
+   */
+  public function constructPager($items, $num_page);
 
 }

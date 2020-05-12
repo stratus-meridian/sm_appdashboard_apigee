@@ -23,6 +23,7 @@ namespace Drupal\sm_appdashboard_apigee;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\TableSort;
+use Drupal\Core\Pager\PagerManagerInterface;
 
 /**
  * Provides useful tasks and functions.
@@ -35,14 +36,6 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-
-  /**
-   * Drupal\Core\Entity\EntityTypeManagerInterface definition.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $tableSort;
-
 
   /**
    * Constructs a new DefaultService object.
@@ -201,9 +194,11 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $order = TableSort::getOrder($header, $request);
     $sort = TableSort::getSort($header, $request);
     $column = $order['sql'];
+
     foreach ($rows as $row) {
       $temp_array[] = $row[$column];
     }
+
     if ($sort == 'asc') {
       asort($temp_array, $flag);
     }
@@ -216,6 +211,23 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     }
 
     return $new_rows;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function constructPager($items, $num_page, $index = 0) {
+    $pagerManager = \Drupal::service('pager.manager');
+
+    $total = count($items);
+
+    $pagerConstruct = $pagerManager->createPager($total, $num_page, $index);
+    $current_page = $pagerConstruct->getCurrentPage();
+
+    $chunks = array_chunk($items, $num_page);
+    $current_page_items = $chunks[$current_page];
+
+    return $current_page_items;
   }
 
 }
