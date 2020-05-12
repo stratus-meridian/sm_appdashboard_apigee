@@ -79,7 +79,7 @@ class AppsDashboardController extends ControllerBase {
     $labelAppDetails = $this->appsDashboardStorage->labels();
 
     if (isset($searchKey)) {
-      $apps = $this->TableSort::getSort()->searchBy($searchKey, $searchType);
+      $apps = $this->appsDashboardStorage->searchBy($searchKey, $searchType);
     }
     else {
       // Retrieve Apps Details (Developer and Team Apps).
@@ -162,6 +162,10 @@ class AppsDashboardController extends ControllerBase {
       ]);
     }
 
+    // Construct Pager.
+    $appDetails = $this->appsDashboardStorage->constructPager($appDetails, 10);
+
+    // Construct Table Sort.
     $appDetails = $this->appsDashboardStorage->constructSort($appDetails, $labelAppDetails);
 
     // Merge into one array variable.
@@ -177,6 +181,9 @@ class AppsDashboardController extends ControllerBase {
         '#header' => $arrApps['labelAppDetails'],
         '#rows' => $arrApps['appDetails'],
         '#empty' => $this->t('No data found'),
+      ],
+      'pager__apps_dashboard' => [
+        '#type' => 'pager',
       ],
     ];
 
