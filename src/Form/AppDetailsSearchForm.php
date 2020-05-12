@@ -23,12 +23,30 @@ namespace Drupal\sm_appdashboard_apigee\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Url;
 
 /**
  * App Details search form.
  */
 class AppDetailsSearchForm extends FormBase {
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $instance = parent::create($container);
+    $instance->requestStack = $container->get('request_stack');
+    return $instance;
+  }
 
   /**
    * {@inheritdoc}
@@ -53,8 +71,18 @@ class AppDetailsSearchForm extends FormBase {
       ],
       'search' => [
         '#type' => 'search',
-        '#title' => $this->t('Search App Details using: [Internal Name]'),
-        '#default_value' => $_GET['search'] ?? '',
+        '#title' => $this->t('Search Keyword'),
+        '#default_value' => ($this->requestStack->getCurrentRequest()->get('search') ? $this->requestStack->getCurrentRequest()->get('search') : ''),
+      ],
+      'search_type' => [
+        '#type' => 'select',
+        '#title' => $this->t('Search Type'),
+        '#options' => [
+          'internal_name' => $this->t('Internal Name'),
+          'display_name' => $this->t('Display Name'),
+          'overall_app_status' => $this->t('Overall App Status'),
+        ],
+        '#default_value' => ($this->requestStack->getCurrentRequest()->get('search_type') ? $this->requestStack->getCurrentRequest()->get('search_type') : 'internal_name'),
       ],
       'actions' => [
         '#prefix' => '<div class="form-item form-actions js-form-wrapper form-wrapper">',
