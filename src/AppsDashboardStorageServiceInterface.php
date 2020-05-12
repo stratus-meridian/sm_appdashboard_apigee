@@ -47,12 +47,14 @@ interface AppsDashboardStorageServiceInterface {
   public function getAppDetailsById($type, $id);
 
   /**
-   * Returns app details using App Internal Name.
+   * Returns app details using different search options.
    *
-   * @param string $appName
-   *   The app name.
+   * @param string $key
+   *   The search keyword.
+   * @param string $type
+   *   The search type.
    */
-  public function searchByAppName($appName);
+  public function searchBy($key, $type);
 
   /**
    * Returns the API product details from an app.
@@ -71,7 +73,7 @@ interface AppsDashboardStorageServiceInterface {
   public function getOverallStatus($app);
 
   /**
-   * Returns the the extracted part of string or false on failure.
+   * Returns the extracted part of string or false on failure.
    *
    * @param string $string
    *   The original string.
@@ -79,5 +81,17 @@ interface AppsDashboardStorageServiceInterface {
    *   The part of the string to check whether it is starting with it or not.
    */
   public function startsWith($string, $startString);
+
+  /**
+   * Returns a formatted tablerows implementing Sort.
+   *
+   * @param object $row
+   *   Array list of data.
+   * @param object $header
+   *   Array list of data.
+   * @param string $startString
+   *   Specifies how to compare the array elements/items.
+   */
+  public function constructSort($rows, $header, $flag = SORT_STRING|SORT_FLAG_CASE);
 
 }

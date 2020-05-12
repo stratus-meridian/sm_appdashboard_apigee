@@ -22,6 +22,7 @@ namespace Drupal\sm_appdashboard_apigee;
  */
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Utility\TableSort;
 
 /**
  * Provides useful tasks and functions.
@@ -36,6 +37,14 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $entityTypeManager;
 
   /**
+   * Drupal\Core\Entity\EntityTypeManagerInterface definition.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $tableSort;
+
+
+  /**
    * Constructs a new DefaultService object.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
@@ -47,13 +56,13 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    */
   public function labels() {
     $labels = [
-      'labelDisplayName' => t('App Display Name'),
-      'labelEmail' => t('Developer Email'),
-      'labelCompany' => t('Company'),
-      'labelStatus' => t('Overall App Status'),
-      'labelOnwerActive' => t('Active user in the site?'),
-      'labelDateTimeCreated' => t('App Date/Time Created'),
-      'labelDateTimeModified' => t('App Date/Time Modified'),
+      ['data' => t('App Display Name'), 'field' => 'fieldDisplayName' ],
+      ['data' => t('Developer Email'), 'field' => 'fieldEmail' ],
+      ['data' => t('Company'), 'field' => 'fieldCompany' ],
+      ['data' => t('Overall App Status'), 'field' => 'fieldStatus' ],
+      ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive' ],
+      ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated' ],
+      ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified' ],
       'labelOperations' => t('Operations'),
     ];
 
@@ -92,14 +101,22 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   /**
    * {@inheritdoc}
    */
-  public function searchByAppName($appName) {
+  public function searchBy($key, $type) {
     $apps = AppsDashboardStorageService::getAllAppDetails();
-
     $app = [];
 
     foreach($apps as $appKey => $appDetails) {
+      if ($type == 'internal_name') {
+        $getCompareKey = $appDetails->getName();
+      }
+      else if ($type == 'display_name') {
+        $getCompareKey = $appDetails->getDisplayName();
+      }
+      else if ($type == 'overall_app_status') {
+        $getCompareKey = AppsDashboardStorageService::getOverallStatus($appDetails);
+      }
 
-      if ($appDetails->getName() == $appName) {
+      if ($getCompareKey == $key) {
         $app = array_merge($app, [$appDetails->id() => $appDetails]);
       }
     }
@@ -173,6 +190,32 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   public function startsWith($string, $startString) {
     $len = strlen($startString);
     return (substr($string, 0, $len) === $startString);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function constructSort($rows, $header, $flag = SORT_STRING|SORT_FLAG_CASE) {
+    $request = \Drupal::request();
+
+    $order = TableSort::getOrder($header, $request);
+    $sort = TableSort::getSort($header, $request);
+    $column = $order['sql'];
+    foreach ($rows as $row) {
+      $temp_array[] = $row[$column];
+    }
+    if ($sort == 'asc') {
+      asort($temp_array, $flag);
+    }
+    else {
+      arsort($temp_array, $flag);
+    }
+
+    foreach ($temp_array as $index => $data) {
+      $new_rows[] = $rows[$index];
+    }
+
+    return $new_rows;
   }
 
 }

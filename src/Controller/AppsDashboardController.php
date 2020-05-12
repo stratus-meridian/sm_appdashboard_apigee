@@ -41,9 +41,9 @@ class AppsDashboardController extends ControllerBase {
   protected $appsDashboardStorage;
 
   /**
-   * The request stack.
+   * The Form Builder.
    *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
+   * @var \Drupal\Core\Form\FormBuilder
    */
   protected $formBuilder;
 
@@ -72,13 +72,14 @@ class AppsDashboardController extends ControllerBase {
     // Define if there is searchKey.
     if ($this->requestStack->getCurrentRequest()->get('search')) {
       $searchKey = $this->requestStack->getCurrentRequest()->get('search');
+      $searchType = $this->requestStack->getCurrentRequest()->get('search_type');
     }
 
     // Define Table Headers.
     $labelAppDetails = $this->appsDashboardStorage->labels();
 
     if (isset($searchKey)) {
-      $apps = $this->appsDashboardStorage->searchByAppName($searchKey);
+      $apps = $this->TableSort::getSort()->searchBy($searchKey, $searchType);
     }
     else {
       // Retrieve Apps Details (Developer and Team Apps).
@@ -148,18 +149,20 @@ class AppsDashboardController extends ControllerBase {
 
       // App Details array push to variables.
       array_push($appDetails, [
-        'AppDisplayName' => $app->getDisplayName() . ' [Internal Name: ' . $app->getName() . ']',
-        'AppDeveloperEmail' => $appDeveloperEmail,
-        'AppCompany' => $appCompany,
-        'AppStatus' => $appOverallStatus,
-        'OwnerActive' => $appOwnerActive,
-        'AppCreatedAt' => $app->getCreatedAt()->format('l, M. d, Y H:i'),
-        'AppModifiedAt' => $app->getlastModifiedAt()->format('l, M. d, Y H:i'),
+        'fieldDisplayName' => $app->getDisplayName() . ' [Internal Name: ' . $app->getName() . ']',
+        'fieldEmail' => $appDeveloperEmail,
+        'fieldCompany' => $appCompany,
+        'fieldStatus' => $appOverallStatus,
+        'fieldOnwerActive' => $appOwnerActive,
+        'fieldDateTimeCreated' => $app->getCreatedAt()->format('l, M. d, Y H:i'),
+        'fieldDateTimeModified' => $app->getlastModifiedAt()->format('l, M. d, Y H:i'),
         'actions' => [
           'data' => $drop_button,
         ],
       ]);
     }
+
+    $appDetails = $this->appsDashboardStorage->constructSort($appDetails, $labelAppDetails);
 
     // Merge into one array variable.
     $arrApps = [
