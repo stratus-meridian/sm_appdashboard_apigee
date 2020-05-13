@@ -190,11 +190,11 @@ class AppDetailsEditForm extends FormBase {
       ],
       [
         ['data' => 'App Date/Time Created', 'header' => TRUE],
-        $app->getCreatedAt()->format('l, M. d, Y H:i'),
+        $app->getCreatedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'App Date/Time Modified', 'header' => TRUE],
-        $app->getLastModifiedAt()->format('l, M. d, Y H:i'),
+        $app->getLastModifiedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'Modified by', 'header' => TRUE],

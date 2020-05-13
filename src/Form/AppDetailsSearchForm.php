@@ -26,6 +26,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Url;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * App Details search form.
@@ -61,6 +62,10 @@ class AppDetailsSearchForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $appDisplayName = NULL) {
     $form_state->setAlwaysProcess(FALSE);
 
+    $default_datetime_from = new DrupalDateTime();
+    $default_datetime_from->sub(new \DateInterval('P1D'));
+    $default_datetime_to = new DrupalDateTime();
+
     $form = [
       '#method' => 'GET',
       '#token' => FALSE,
@@ -73,16 +78,71 @@ class AppDetailsSearchForm extends FormBase {
         '#type' => 'search',
         '#title' => $this->t('Search Keyword'),
         '#default_value' => ($this->requestStack->getCurrentRequest()->get('search') ? $this->requestStack->getCurrentRequest()->get('search') : ''),
+        '#states' => [
+          'invisible' => [
+            [
+              'select[name="search_type"]' => [
+                'value' => 'date_time_created',
+              ],
+            ],[
+              'select[name="search_type"]' => [
+                'value' => 'date_time_modified',
+              ],
+            ],
+          ],
+        ],
+      ],
+      'date_time__container' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => [
+            'sm-datetime-container',
+          ],
+        ],
+        'search_datetime_from' => [
+          '#type' => 'datetime',
+          '#title' => $this->t('Date/Time From'),
+          '#default_value' => $default_datetime_from,
+        ],
+        'search_datetime_to' => [
+          '#type' => 'datetime',
+          '#title' => $this->t('Date/Time To'),
+          '#default_value' => $default_datetime_to,
+        ],
+        '#states' => [
+          'invisible' => [
+            [
+              'select[name="search_type"]' => [
+                'value' => 'display_name',
+              ],
+            ],[
+              'select[name="search_type"]' => [
+                'value' => 'internal_name',
+              ],
+            ],[
+              'select[name="search_type"]' => [
+                'value' => 'company',
+              ],
+            ],[
+              'select[name="search_type"]' => [
+                'value' => 'overall_app_status',
+              ],
+            ],
+          ],
+        ],
       ],
       'search_type' => [
         '#type' => 'select',
         '#title' => $this->t('Search Type'),
         '#options' => [
-          'internal_name' => $this->t('Internal Name'),
           'display_name' => $this->t('Display Name'),
+          'internal_name' => $this->t('Internal Name'),
+          'company' => $this->t('Company'),
           'overall_app_status' => $this->t('Overall App Status'),
+          'date_time_created' => $this->t('Date/Time Created'),
+          'date_time_modified' => $this->t('Date/Time Modified'),
         ],
-        '#default_value' => ($this->requestStack->getCurrentRequest()->get('search_type') ? $this->requestStack->getCurrentRequest()->get('search_type') : 'internal_name'),
+        '#default_value' => ($this->requestStack->getCurrentRequest()->get('search_type') ? $this->requestStack->getCurrentRequest()->get('search_type') : 'display_name'),
       ],
       'actions' => [
         '#prefix' => '<div class="form-item form-actions js-form-wrapper form-wrapper">',
