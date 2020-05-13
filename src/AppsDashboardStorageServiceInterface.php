@@ -99,7 +99,7 @@ interface AppsDashboardStorageServiceInterface {
    *   Table rows which need sortable.
    * @param array $header
    *   Table header.
-   * @param string $flag|SORT_STRING|SORT_FLAG_CASE
+   * @param string $flag
    *   Specifies how to compare the array elements/items.
    */
   public function constructSort(array $rows, array $header, $flag = SORT_STRING | SORT_FLAG_CASE);
