@@ -54,7 +54,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
       [
         'data' => t('Overall App Status'),
         'field' => 'fieldStatus',
-        'sort' => 'desc'
+        'sort' => 'desc',
       ],
       ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
       ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
