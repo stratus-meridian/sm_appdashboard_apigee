@@ -23,7 +23,6 @@ namespace Drupal\sm_appdashboard_apigee;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Utility\TableSort;
-use Drupal\Core\Pager\PagerManagerInterface;
 
 /**
  * Provides useful tasks and functions.
@@ -52,7 +51,11 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
       ['data' => t('App Display Name'), 'field' => 'fieldDisplayName'],
       ['data' => t('Developer Email'), 'field' => 'fieldEmail'],
       ['data' => t('Company'), 'field' => 'fieldCompany'],
-      ['data' => t('Overall App Status'), 'field' => 'fieldStatus', 'sort' => 'desc'],
+      [
+        'data' => t('Overall App Status'),
+        'field' => 'fieldStatus',
+        'sort' => 'desc'
+      ],
       ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
       ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
       ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
@@ -108,23 +111,23 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $apps = AppsDashboardStorageService::getAllAppDetails();
     $app = [];
 
-    foreach($apps as $appKey => $appDetails) {
+    foreach ($apps as $appKey => $appDetails) {
       if ($type == 'internal_name') {
         $getCompareKey = $appDetails->getName();
       }
-      else if ($type == 'display_name') {
+      elseif ($type == 'display_name') {
         $getCompareKey = $appDetails->getDisplayName();
       }
-      else if ($type == 'overall_app_status') {
+      elseif ($type == 'overall_app_status') {
         $getCompareKey = AppsDashboardStorageService::getOverallStatus($appDetails);
       }
-      else if ($type == 'company') {
+      elseif ($type == 'company') {
         if ($appDetails->getEntityTypeId() !== 'developer_app') {
           $getCompareKey = $appDetails->getCompanyName();
         }
       }
 
-      if (stripos($getCompareKey, $key) !== false) {
+      if (stripos($getCompareKey, $key) !== FALSE) {
         $app = array_merge($app, [$appDetails->id() => $appDetails]);
       }
     }
@@ -143,7 +146,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
 
     $app = [];
 
-    foreach($apps as $appKey => $appDetails) {
+    foreach ($apps as $appKey => $appDetails) {
       if ($type == 'date_time_created') {
         $getCompareKey = $appDetails->getCreatedAt()->getTimestamp();
       }
@@ -230,7 +233,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   /**
    * {@inheritdoc}
    */
-  public function constructSort($rows, $header, $flag = SORT_STRING|SORT_FLAG_CASE) {
+  public function constructSort($rows, $header, $flag = SORT_STRING | SORT_FLAG_CASE) {
     $request = \Drupal::request();
 
     $order = TableSort::getOrder($header, $request);

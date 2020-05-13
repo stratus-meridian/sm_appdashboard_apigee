@@ -64,7 +64,7 @@ interface AppsDashboardStorageServiceInterface {
    * @param string $type
    *   The search type.
    */
-  public function searchByDates($datetime, $type);
+  public function searchByDates(array $datetime, $type);
 
   /**
    * Returns the API product details from an app.
@@ -96,22 +96,22 @@ interface AppsDashboardStorageServiceInterface {
    * Returns a split array implementing Sort.
    *
    * @param array $rows
-   *   Table rows which need sortable
+   *   Table rows which need sortable.
    * @param array $header
-   *   Table header
-   * @param string $startString
+   *   Table header.
+   * @param string $flag|SORT_STRING|SORT_FLAG_CASE
    *   Specifies how to compare the array elements/items.
    */
-  public function constructSort($rows, $header, $flag = SORT_STRING|SORT_FLAG_CASE);
+  public function constructSort(array $rows, array $header, $flag = SORT_STRING | SORT_FLAG_CASE);
 
   /**
    * Returns a split array implementing pager.
    *
    * @param array $items
-   *   Items which need split
-   * @param integer $num_page
-   *   How many items view in page
+   *   Items which need split.
+   * @param int $num_page
+   *   How many items view in page.
    */
-  public function constructPager($items, $num_page);
+  public function constructPager(array $items, $num_page);
 
 }
