@@ -20,6 +20,14 @@ form.smdp-appdetails-search-form .form-item {
   margin: 0.75rem 0.5rem 0 0;
 }
 
+form.smdp-appdetails-search-form .sm-datetime-container {
+  display: inline-flex;
+}
+
+form.smdp-appdetails-search-form .form-datetime-wrapper .form-items-inline .form-item  {
+  margin-top: 0;
+}
+
 form.smdp-appdetails-search-form .form-item .button {
   margin-bottom: 0;
 }

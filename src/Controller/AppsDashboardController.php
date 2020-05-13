@@ -69,22 +69,46 @@ class AppsDashboardController extends ControllerBase {
    * {@inheritdoc}
    */
   public function listApps() {
-    // Define if there is searchKey.
-    if ($this->requestStack->getCurrentRequest()->get('search')) {
-      $searchKey = $this->requestStack->getCurrentRequest()->get('search');
-      $searchType = $this->requestStack->getCurrentRequest()->get('search_type');
+    // Define search logic.
+    $searchType = $this->requestStack->getCurrentRequest()->get('search_type');
+
+    if ($searchType == 'date_time_created' || $searchType == 'date_time_modified') {
+      if ($this->requestStack->getCurrentRequest()->get('search_datetime_from') || $this->requestStack->getCurrentRequest()->get('search_datetime_to')) {
+        $searchKey = [
+          'from' => $this->requestStack->getCurrentRequest()->get('search_datetime_from'),
+          'to' => $this->requestStack->getCurrentRequest()->get('search_datetime_to'),
+        ];
+      }
+      else {
+        $searchKey = NULL;
+        $searchType = NULL;
+      }
+    }
+    else {
+      if ($this->requestStack->getCurrentRequest()->get('search')) {
+        $searchKey = $this->requestStack->getCurrentRequest()->get('search');
+      }
+      else {
+        $searchKey = NULL;
+        $searchType = NULL;
+      }
     }
 
-    // Define Table Headers.
-    $labelAppDetails = $this->appsDashboardStorage->labels();
-
-    if (isset($searchKey)) {
-      $apps = $this->appsDashboardStorage->searchBy($searchKey, $searchType);
+    if (isset($searchKey) || isset($searchType)) {
+      if ($searchType == 'date_time_created' || $searchType == 'date_time_modified') {
+        $apps = $this->appsDashboardStorage->searchByDates($searchKey, $searchType);
+      }
+      else {
+        $apps = $this->appsDashboardStorage->searchBy($searchKey, $searchType);
+      }
     }
     else {
       // Retrieve Apps Details (Developer and Team Apps).
       $apps = $this->appsDashboardStorage->getAllAppDetails();
     }
+
+    // Define Table Headers.
+    $labelAppDetails = $this->appsDashboardStorage->labels();
 
     // Pass App Details into variables.
     $appDetails = [];
@@ -154,8 +178,8 @@ class AppsDashboardController extends ControllerBase {
         'fieldCompany' => $appCompany,
         'fieldStatus' => $appOverallStatus,
         'fieldOnwerActive' => $appOwnerActive,
-        'fieldDateTimeCreated' => $app->getCreatedAt()->format('l, M. d, Y H:i'),
-        'fieldDateTimeModified' => $app->getlastModifiedAt()->format('l, M. d, Y H:i'),
+        'fieldDateTimeCreated' => $app->getCreatedAt()->format('M. d, Y h:i A'),
+        'fieldDateTimeModified' => $app->getlastModifiedAt()->format('M. d, Y h:i A'),
         'actions' => [
           'data' => $drop_button,
         ],
@@ -283,11 +307,11 @@ class AppsDashboardController extends ControllerBase {
       ],
       [
         ['data' => 'App Date/Time Created', 'header' => TRUE],
-        $app->getCreatedAt()->format('l, M. d, Y H:i'),
+        $app->getCreatedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'App Date/Time Modified', 'header' => TRUE],
-        $app->getLastModifiedAt()->format('l, M. d, Y H:i'),
+        $app->getLastModifiedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'Modified by', 'header' => TRUE],

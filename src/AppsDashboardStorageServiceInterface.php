@@ -57,6 +57,16 @@ interface AppsDashboardStorageServiceInterface {
   public function searchBy($key, $type);
 
   /**
+   * Returns app details using different datetime options.
+   *
+   * @param array $datetime
+   *   The datetime search keyword.
+   * @param string $type
+   *   The search type.
+   */
+  public function searchByDates($datetime, $type);
+
+  /**
    * Returns the API product details from an app.
    *
    * @param object $app
