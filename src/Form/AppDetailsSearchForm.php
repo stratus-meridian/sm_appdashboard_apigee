@@ -24,7 +24,6 @@ namespace Drupal\sm_appdashboard_apigee\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Url;
 use Drupal\Core\Datetime\DrupalDateTime;
 
@@ -84,7 +83,7 @@ class AppDetailsSearchForm extends FormBase {
               'select[name="search_type"]' => [
                 'value' => 'date_time_created',
               ],
-            ],[
+            ], [
               'select[name="search_type"]' => [
                 'value' => 'date_time_modified',
               ],
@@ -115,15 +114,15 @@ class AppDetailsSearchForm extends FormBase {
               'select[name="search_type"]' => [
                 'value' => 'display_name',
               ],
-            ],[
+            ], [
               'select[name="search_type"]' => [
                 'value' => 'internal_name',
               ],
-            ],[
+            ], [
               'select[name="search_type"]' => [
                 'value' => 'company',
               ],
-            ],[
+            ], [
               'select[name="search_type"]' => [
                 'value' => 'overall_app_status',
               ],
@@ -182,5 +181,5 @@ class AppDetailsSearchForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {}
-}
 
+}
