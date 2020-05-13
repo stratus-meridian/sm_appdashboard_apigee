@@ -49,13 +49,13 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    */
   public function labels() {
     $labels = [
-      ['data' => t('App Display Name'), 'field' => 'fieldDisplayName' ],
-      ['data' => t('Developer Email'), 'field' => 'fieldEmail' ],
-      ['data' => t('Company'), 'field' => 'fieldCompany' ],
-      ['data' => t('Overall App Status'), 'field' => 'fieldStatus' ],
-      ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive' ],
-      ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated' ],
-      ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified' ],
+      ['data' => t('App Display Name'), 'field' => 'fieldDisplayName'],
+      ['data' => t('Developer Email'), 'field' => 'fieldEmail'],
+      ['data' => t('Company'), 'field' => 'fieldCompany'],
+      ['data' => t('Overall App Status'), 'field' => 'fieldStatus', 'sort' => 'desc'],
+      ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
+      ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
+      ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
       'labelOperations' => t('Operations'),
     ];
 
@@ -118,8 +118,40 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
       else if ($type == 'overall_app_status') {
         $getCompareKey = AppsDashboardStorageService::getOverallStatus($appDetails);
       }
+      else if ($type == 'company') {
+        if ($appDetails->getEntityTypeId() !== 'developer_app') {
+          $getCompareKey = $appDetails->getCompanyName();
+        }
+      }
 
-      if ($getCompareKey == $key) {
+      if (stripos($getCompareKey, $key) !== false) {
+        $app = array_merge($app, [$appDetails->id() => $appDetails]);
+      }
+    }
+
+    return $app;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function searchByDates($datetime, $type) {
+    $apps = AppsDashboardStorageService::getAllAppDetails();
+
+    $datetime_from = strtotime($datetime['from']['date'] . ' ' . $datetime['from']['time']);
+    $datetime_to = strtotime($datetime['to']['date'] . ' ' . $datetime['to']['time']);
+
+    $app = [];
+
+    foreach($apps as $appKey => $appDetails) {
+      if ($type == 'date_time_created') {
+        $getCompareKey = $appDetails->getCreatedAt()->getTimestamp();
+      }
+      else {
+        $getCompareKey = $appDetails->getLastModifiedAt()->getTimestamp();
+      }
+
+      if (($getCompareKey >= $datetime_from) && ($getCompareKey <= $datetime_to)) {
         $app = array_merge($app, [$appDetails->id() => $appDetails]);
       }
     }
