@@ -1,4 +1,4 @@
-name: Stratus Meridian Apps Dashboard
+name: Stratus Meridian's App Dashboard for Apigee
 description: 'Provides an application dashboard interface for product manager role to approve/revoke keys connected to an Apigee Org.'
 package: Stratus Meridian
 
@@ -8,3 +8,8 @@ core: '8.x'
 core_version_requirement: ^8 || ^9
 dependencies:
   - apigee_edge:apigee_edge
+
+# Information added by Drupal.org packaging script on 2020-05-18
+version: '8.x-1.0-beta2'
+project: 'sm_appdashboard_apigee'
+datestamp: 1589771088

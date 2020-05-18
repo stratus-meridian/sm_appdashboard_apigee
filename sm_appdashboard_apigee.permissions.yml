@@ -1,0 +1,12 @@
+manage appdashboard:
+  title: 'Manage all app listed in appdashboard'
+  description: 'View, edit the app details and change its status'
+  restrict access: true
+view appdashboard:
+  title: 'View app details'
+  description: 'View the full details of the app'
+  restrict access: true
+change appdashboard:
+  title: 'Change app status'
+  description: 'Change the status of the app by changing the status of api products associated to approved/revoked'
+  restrict access: true
