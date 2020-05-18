@@ -75,7 +75,7 @@ class AppDetailsSearchForm extends FormBase {
       ],
       'search' => [
         '#type' => 'search',
-        '#title' => $this->t('Search Keyword'),
+        '#title' => $this->t('Search keyword'),
         '#default_value' => ($this->requestStack->getCurrentRequest()->get('search') ? $this->requestStack->getCurrentRequest()->get('search') : ''),
         '#states' => [
           'invisible' => [
@@ -132,7 +132,7 @@ class AppDetailsSearchForm extends FormBase {
       ],
       'search_type' => [
         '#type' => 'select',
-        '#title' => $this->t('Search Type'),
+        '#title' => $this->t('Search by'),
         '#options' => [
           'display_name' => $this->t('Display Name'),
           'internal_name' => $this->t('Internal Name'),
