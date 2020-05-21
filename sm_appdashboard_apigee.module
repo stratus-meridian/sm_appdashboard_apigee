@@ -19,7 +19,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+use Drupal\Core\Routing\RouteMatchInterface;
+
 /**
- * @file
- * Contains sm_appdashboard_apigee.module.
+ * Implements hook_help().
  */
+function sm_appdashboard_apigee_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.sm_appdashboard_apigee':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This Dashboard module for Apigee is a rewrite of D7 Module from original author <a href=":sm_appdashboard_d7">here</a>.', [':sm_appdashboard_d7' => 'https://github.com/giteshk/apigee_devportal_extras/tree/master/apigee_appdashboard']) . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Approve or Revoke access to any App via Developer portal, instead of performing this action on Edge') . '</li>';
+      $output .= '<li>' . t('Search for Apps by name') . '</li>';
+      $output .= '<li>' . t('Search and Sort Apps by date created, date modified') . '</li>';
+      $output .= '<li>' . t('Apigee Team Apps compatible') . '</li>';
+      $output .= '</ul>';
+
+      return $output;
+  }
+}
