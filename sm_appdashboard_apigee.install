@@ -60,6 +60,8 @@ function sm_appdashboard_apigee_requirements($phase) {
  * Implements hook_install().
  */
 function sm_appdashboard_apigee_install() {
+  $requirements = [];
+
   /* @var \Drupal\apigee_edge\SDKConnectorInterface $sdk_connector */
   $sdk_connector = \Drupal::service('apigee_edge.sdk_connector');
   $sdk_connector->testConnection();
