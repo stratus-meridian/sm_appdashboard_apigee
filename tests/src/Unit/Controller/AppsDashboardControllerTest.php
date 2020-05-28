@@ -9,27 +9,22 @@ use Drupal\Tests\UnitTestCase;
  */
 class AppsDashboardControllerTest extends UnitTestCase {
 
-  /**
-   * Appdashboard storage.
-   * @var Drupal\sm_appdashboard_apigee\AppsDashboardStorage
-   */
-  protected $appsDashboardStorage;
+  protected $prophecy;
+
 
   /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
+    $this->prophecy = $this->prophesize('Drupal\sm_appdashboard_apigee\AppsDashboardStorageService');
   }
 
   /**
    * Test the list apps.
    */
   public function testListApps() {
-
-    $prophecy = $this->prophesize('Drupal\sm_appdashboard_apigee\AppsDashboardStorage');
-    $labels = $prophecy->labels()->willReturn(['labelDisplayName' => 'App Display Name', 'labelDisplayName1' => 'App Display Name1']);
-    $this->assertEmpty($labels);
-
+    $labels = $this->prophecy->labels()->willReturn(['labelDisplayName' => 'App Display Name', 'labelDisplayName1' => 'App Display Name1']);
+    $this->assertNotEmpty($labels);
   }
 }
