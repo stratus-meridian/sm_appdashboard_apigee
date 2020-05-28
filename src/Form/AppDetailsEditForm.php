@@ -21,13 +21,6 @@ namespace Drupal\sm_appdashboard_apigee\Form;
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-use Drupal\Core\Form\FormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\apigee_edge\SDKConnectorInterface;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
 use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
 use Apigee\Edge\Api\Management\Controller\CompanyAppController;
@@ -36,6 +29,12 @@ use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use DrupalCore\Link;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form to edit the App Details and change API Products status.
@@ -47,25 +46,31 @@ class AppDetailsEditForm extends FormBase {
    *
    * @var \Drupal\apigee_edge\SDKConnectorInterface
    */
-  private $connector;
+  protected $connector;
 
   /**
-   * Constructs a AppDetailsEditForm.
+   * AppsDashboardStorageServiceInterface definition.
    *
-   * @param \Drupal\apigee_edge\SDKConnectorInterface $connector
-   *   The SDK connector service.
+   * @var Drupal\sm_appdashboard_apigee\AppsDashboardStorageServiceInterface
    */
-  public function __construct(SDKConnectorInterface $connector) {
-    $this->connector = $connector;
-  }
+  protected $appsDashboardStorage;
+
+  /**
+   * The Messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('apigee_edge.sdk_connector')
-    );
+    $instance = parent::create($container);
+    $instance->connector = $container->get('apigee_edge.sdk_connector');
+    $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    $instance->messenger = $container->get('messenger');
+    return $instance;
   }
 
   /**
@@ -83,21 +88,20 @@ class AppDetailsEditForm extends FormBase {
       $this->connector->testConnection();
     }
     catch (\Exception $exception) {
-      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that <a href=":link">Apigee Edge connection settings</a> are correct.', [
-        ':link' => Url::fromRoute('apigee_edge.settings')->toString(),
-      ]));
+      $link = Link::fromTextAndUrl($this->t('Apigee Edge connection settings'), Url::fromRoute('apigee_edge.settings'));
+      $this->messenger()->addError($this->t('Cannot connect to Apigee Edge server. Please ensure that @link are correct.', ['@link' => $link]));
       return $form;
     }
 
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $this->messenger()->addError($this->t('There are errors encountered upon viewing the App Details.'));
       $path = Url::fromRoute('apps_dashboard.list', [])->toString();
       $response = new RedirectResponse($path);
       $response->send();
     }
 
     // Load App Details.
-    $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
+    $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
       // Set Developer Apps owner active data.
@@ -131,10 +135,10 @@ class AppDetailsEditForm extends FormBase {
 
     // Get App Credentials and API Products.
     $appCredentials = $app->getCredentials();
-    $apiProducts = AppsDashboardStorage::getApiProducts($app);
+    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
     // Get App Overall Status.
-    $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
     $data_apiProducts = [];
 
@@ -186,11 +190,11 @@ class AppDetailsEditForm extends FormBase {
       ],
       [
         ['data' => 'App Date/Time Created', 'header' => TRUE],
-        $app->getCreatedAt()->format('l, M. d, Y H:i'),
+        $app->getCreatedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'App Date/Time Modified', 'header' => TRUE],
-        $app->getLastModifiedAt()->format('l, M. d, Y H:i'),
+        $app->getLastModifiedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'Modified by', 'header' => TRUE],
@@ -280,7 +284,7 @@ class AppDetailsEditForm extends FormBase {
 
     // Array push API Products to $val_apiproducts.
     foreach ($formSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
-      if (AppsDashboardStorage::startsWith($selectboxKey, 'selectbox_products') == TRUE) {
+      if ($this->appsDashboardStorage->startsWith($selectboxKey, 'selectbox_products') == TRUE) {
         array_push($val_apiproducts, [
           'apiproducts_name' => $selectboxValue['#title'],
           'apiproducts_status' => $form_state->getValue($selectboxKey),
@@ -307,25 +311,25 @@ class AppDetailsEditForm extends FormBase {
         $devAppCredentialsController = NULL;
         $devAppController = NULL;
 
-        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
+        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
         }
         else {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiRequestException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
     }
     else {
@@ -351,25 +355,25 @@ class AppDetailsEditForm extends FormBase {
         $compAppCredentialsController = NULL;
         $compAppController = NULL;
 
-        drupal_set_message($this->t('App Details are successfully updated.'), 'status');
+        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
         $form_state->setRedirect('apps_dashboard.list');
       }
       catch (ClientErrorException $err) {
         if ($err->getEdgeErrorCode()) {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode(), 'error');
+          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
         }
         else {
-          drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
         }
       }
       catch (ServerErrorException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiRequestException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
       catch (ApiException $err) {
-        drupal_set_message($this->t('There is an error encountered. Error Code:') . $err, 'status');
+        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err, 'status');
       }
     }
   }

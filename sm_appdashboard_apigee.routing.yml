@@ -4,7 +4,7 @@ apps_dashboard.list:
     _controller: '\Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController::listApps'
     _title: 'Apps Dashboard'
   requirements:
-    _permission: 'administer apigee edge'
+    _permission: 'manage appdashboard'
 
 apps_dashboard.view:
   path: '/admin/config/apigee-edge/apps-dashboard/{apptype}/{appid}'
@@ -12,7 +12,7 @@ apps_dashboard.view:
     _controller: '\Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController::viewApp'
     _title: 'View App Details'
   requirements:
-    _permission: 'administer apigee edge'
+    _permission: 'view appdashboard'
   options:
     parameters:
       apptype:
@@ -26,7 +26,7 @@ apps_dashboard.edit:
     _form: '\Drupal\sm_appdashboard_apigee\Form\AppDetailsEditForm'
     _title: 'Edit App Details'
   requirements:
-    _permission: 'administer apigee edge'
+    _permission: 'change appdashboard'
   options:
     parameters:
       apptype:

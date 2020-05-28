@@ -1,0 +1,6 @@
+sm-appdashboard-apigee-css:
+  css:
+    component:
+      assets/css/sm_appdashboard_apigee.css: {}
+  js:
+    assets/js/scripts.js: {}

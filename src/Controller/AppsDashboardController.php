@@ -23,8 +23,8 @@ namespace Drupal\sm_appdashboard_apigee\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\sm_appdashboard_apigee\AppsDashboardStorage;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller for the Apps Dashboard view and list pages.
@@ -32,14 +32,81 @@ use Drupal\Core\Url;
 class AppsDashboardController extends ControllerBase {
 
   /**
+   * AppsDashboardStorageServiceInterface definition.
+   *
+   * @var Drupal\sm_appdashboard_apigee\AppsDashboardStorageServiceInterface
+   */
+  protected $appsDashboardStorage;
+
+  /**
+   * The Form Builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilder
+   */
+  protected $formBuilder;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $instance = parent::create($container);
+    $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
+    $instance->formBuilder = $container->get('form_builder');
+    $instance->requestStack = $container->get('request_stack');
+    return $instance;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function listApps() {
-    // Define Table Headers.
-    $labelAppDetails = AppsDashboardStorage::labels();
+    // Define search logic.
+    $searchType = $this->requestStack->getCurrentRequest()->get('search_type');
 
-    // Retrieve Apps Details (Developer and Team Apps).
-    $apps = AppsDashboardStorage::getAllAppDetails();
+    if ($searchType == 'date_time_created' || $searchType == 'date_time_modified') {
+      if ($this->requestStack->getCurrentRequest()->get('search_datetime_from') || $this->requestStack->getCurrentRequest()->get('search_datetime_to')) {
+        $searchKey = [
+          'from' => $this->requestStack->getCurrentRequest()->get('search_datetime_from'),
+          'to' => $this->requestStack->getCurrentRequest()->get('search_datetime_to'),
+        ];
+      }
+      else {
+        $searchKey = NULL;
+        $searchType = NULL;
+      }
+    }
+    else {
+      if ($this->requestStack->getCurrentRequest()->get('search')) {
+        $searchKey = $this->requestStack->getCurrentRequest()->get('search');
+      }
+      else {
+        $searchKey = NULL;
+        $searchType = NULL;
+      }
+    }
+
+    if (isset($searchKey) || isset($searchType)) {
+      if ($searchType == 'date_time_created' || $searchType == 'date_time_modified') {
+        $apps = $this->appsDashboardStorage->searchByDates($searchKey, $searchType);
+      }
+      else {
+        $apps = $this->appsDashboardStorage->searchBy($searchKey, $searchType);
+      }
+    }
+    else {
+      // Retrieve Apps Details (Developer and Team Apps).
+      $apps = $this->appsDashboardStorage->getAllAppDetails();
+    }
+
+    // Define Table Headers.
+    $labelAppDetails = $this->appsDashboardStorage->labels();
 
     // Pass App Details into variables.
     $appDetails = [];
@@ -75,7 +142,7 @@ class AppsDashboardController extends ControllerBase {
       }
 
       // Get App Overall Status.
-      $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+      $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
       // Setup actions (dropdown).
       $view_url = Url::fromRoute('apps_dashboard.view', [
@@ -104,18 +171,24 @@ class AppsDashboardController extends ControllerBase {
 
       // App Details array push to variables.
       array_push($appDetails, [
-        'AppDisplayName' => $app->getDisplayName() . ' [Internal Name: ' . $app->getName() . ']',
-        'AppDeveloperEmail' => $appDeveloperEmail,
-        'AppCompany' => $appCompany,
-        'AppStatus' => $appOverallStatus,
-        'OwnerActive' => $appOwnerActive,
-        'AppCreatedAt' => $app->getCreatedAt()->format('l, M. d, Y H:i'),
-        'AppModifiedAt' => $app->getlastModifiedAt()->format('l, M. d, Y H:i'),
+        'fieldDisplayName' => $app->getDisplayName() . ' [Internal Name: ' . $app->getName() . ']',
+        'fieldEmail' => $appDeveloperEmail,
+        'fieldCompany' => $appCompany,
+        'fieldStatus' => $appOverallStatus,
+        'fieldOnwerActive' => $appOwnerActive,
+        'fieldDateTimeCreated' => $app->getCreatedAt()->format('M. d, Y h:i A'),
+        'fieldDateTimeModified' => $app->getlastModifiedAt()->format('M. d, Y h:i A'),
         'actions' => [
           'data' => $drop_button,
         ],
       ]);
     }
+
+    // Construct Pager.
+    $appDetails = $this->appsDashboardStorage->constructPager($appDetails, 10);
+
+    // Construct Table Sort.
+    $appDetails = $this->appsDashboardStorage->constructSort($appDetails, $labelAppDetails);
 
     // Merge into one array variable.
     $arrApps = [
@@ -123,11 +196,17 @@ class AppsDashboardController extends ControllerBase {
       'appDetails' => $appDetails,
     ];
 
-    $form['table__apps_dashboard'] = [
-      '#type' => 'table',
-      '#header' => $arrApps['labelAppDetails'],
-      '#rows' => $arrApps['appDetails'],
-      '#empty' => $this->t('No data found'),
+    $form = [
+      'search__apps_dashboard' => $this->formBuilder->getForm('\Drupal\sm_appdashboard_apigee\Form\AppDetailsSearchForm'),
+      'table__apps_dashboard' => [
+        '#type' => 'table',
+        '#header' => $arrApps['labelAppDetails'],
+        '#rows' => $arrApps['appDetails'],
+        '#empty' => $this->t('No data found'),
+      ],
+      'pager__apps_dashboard' => [
+        '#type' => 'pager',
+      ],
     ];
 
     return $form;
@@ -138,14 +217,14 @@ class AppsDashboardController extends ControllerBase {
    */
   public function viewApp($apptype, $appid) {
     if (!isset($apptype) || !isset($appid)) {
-      drupal_set_message($this->t('There are errors encountered upon viewing the App Details.'), 'error');
+      $this->messenger()->addError($this->t('There are errors encountered upon viewing the App Details.'));
       $path = Url::fromRoute('apps_dashboard.list', [])->toString();
       $response = new RedirectResponse($path);
       $response->send();
     }
 
     // Load App Deails.
-    $app = AppsDashboardStorage::getAppDetailsById($apptype, $appid);
+    $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
       // Set Developer Apps owner active data.
@@ -177,10 +256,10 @@ class AppsDashboardController extends ControllerBase {
     }
 
     // Get App Credentials and API Products.
-    $apiProducts = AppsDashboardStorage::getApiProducts($app);
+    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
     // Get App Overall Status.
-    $appOverallStatus = AppsDashboardStorage::getOverallStatus($app);
+    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
     $data_apiProducts = [];
 
@@ -226,11 +305,11 @@ class AppsDashboardController extends ControllerBase {
       ],
       [
         ['data' => 'App Date/Time Created', 'header' => TRUE],
-        $app->getCreatedAt()->format('l, M. d, Y H:i'),
+        $app->getCreatedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'App Date/Time Modified', 'header' => TRUE],
-        $app->getLastModifiedAt()->format('l, M. d, Y H:i'),
+        $app->getLastModifiedAt()->format('M. d, Y h:i A'),
       ],
       [
         ['data' => 'Modified by', 'header' => TRUE],
