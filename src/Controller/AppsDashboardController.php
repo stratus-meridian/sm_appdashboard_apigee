@@ -53,14 +53,23 @@ class AppsDashboardController extends ControllerBase {
   protected $requestStack;
 
   /**
+   * AppsDashboardController constructor.
+   */
+  public function __construct($appsDashboardStorage, $formBuilder, $requestStack) {
+    $this->appsDashboardStorage = $appsDashboardStorage;
+    $this->formBuilder = $formBuilder;
+    $this->requestStack = $requestStack;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    $instance = parent::create($container);
-    $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
-    $instance->formBuilder = $container->get('form_builder');
-    $instance->requestStack = $container->get('request_stack');
-    return $instance;
+    return new static(
+      $container->get('sm_appsdashboard_apigee.appsdashboard_storage'),
+      $container->get('form_builder'),
+      $container->get('request_stack')
+    );
   }
 
   /**

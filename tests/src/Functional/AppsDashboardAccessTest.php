@@ -36,6 +36,8 @@ class AppsDashboardAccessTest extends BrowserTestBase {
   protected function setUp() {
     parent::setUp();
 
+    $key = \Drupal::config('key.key.apigee_edge_connection_default');
+
     // Create and log in an administrative apigee edge user.
     $this->adminUser = $this->drupalCreateUser([
       'administer site configuration',
@@ -48,8 +50,8 @@ class AppsDashboardAccessTest extends BrowserTestBase {
    * Test to access the apps dashboard page.
    */
    public function testAppsDashboardPageAccess() {
-     //$this->drupalGet('/admin/config');
-     $this->drupalGet(Url::fromRoute('<front>'));
+     $t = '';
+     $this->drupalGet('/admin/config/apigee-edge/settings');
      $this->assertSession()->statusCodeEquals(200);
    }
 }
