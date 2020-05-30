@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormBuilder;
 use Drupal\sm_appdashboard_apigee\AppsDashboardStorageService;
 use Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController;
 use Drupal\Tests\UnitTestCase;
+use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 /**
@@ -46,45 +47,49 @@ class AppsDashboardControllerTest extends UnitTestCase {
    */
   protected function setUp() {
     parent::setUp();
-//    $this->appsDashboardController = $this->getMockBuilder('Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController')
-//      ->disableOriginalConstructor()
-//      ->setMethods(['getCurrentRequest'])
-//      ->getMock();
-    //$this->appsDashboardController = $this->prophesize(AppsDashboardController::class);
     $this->appsDashboardStorage = $this->prophesize(AppsDashboardStorageService::class);
     $this->formBuilder = $this->prophesize(FormBuilder::class);
     $this->requestStack = $this->prophesize(RequestStack::class);
-    $this->appsDashboardController = new AppsDashboardController(
-      $this->appsDashboardStorage->reveal(),
-      $this->formBuilder->reveal(),
-      $this->requestStack->reveal()
-    );
-
+    $this->appsDashboardController = $this->getMockBuilder(AppsDashboardController::class)
+      ->setConstructorArgs([
+        $this->appsDashboardStorage->reveal(),
+        $this->formBuilder->reveal(),
+        $this->requestStack->reveal()
+      ])
+      ->setMethods(['t'])
+      ->getMock();
+    $this->appsDashboardController->expects($this->any())->method('t')->will($this->returnArgument(0));
   }
-
-//  /**
-//   * Test the list apps on Empty search.
-//   */
-//  public function testListAppsOnEmptySearch() {
-//    $requestObject = $this->prophesize(Request::class);
-//    $requestObject->get()->willReturn('');
-//    $this->requestStack->getCurrentRequest()->willReturn($requestObject);
-//    $this->appsDashboardStorage->getAllAppDetails()->willReturn([]);
-//    $this->assertEmpty($this->appsDashboardController->listApps(), 'Tset failed on the empty search');
-//  }
 
   /**
-   * Testing the translations.
+   * Test the list apps on -
+   *   - On Empty Search
+   *   - On Empty labels
+   *   - On Empty App Details.
    */
-  public function testTranslations() {
-//    $apps = $this->prophesize(AppsDashboardController::class);
-//    $apps = $apps->reveal();
+  public function testListAppsOnEmpty() {
     $requestObject = $this->prophesize(Request::class);
-    $requestObject->get()->willReturn('');
+    $requestObject->get(Argument::any())->willReturn('');
+    $this->appsDashboardStorage->labels()->willReturn([]);
     $this->requestStack->getCurrentRequest()->willReturn($requestObject);
     $this->appsDashboardStorage->getAllAppDetails()->willReturn([]);
-    $this->formBuilder->t()->willReturn('Tett');
-    $this->assertEmpty($this->appsDashboardController->listApps(), 'Second test');
+    $this->appsDashboardStorage->constructPager([], 10)->willReturn([]);
+    $this->appsDashboardStorage->constructSort([], [])->willReturn([]);
 
+    $result = [
+      'search__apps_dashboard' => null,
+      'table__apps_dashboard' => [
+        '#type' => 'table',
+        '#header' => [],
+        '#rows' => [],
+        '#empty' => 'No data found',
+      ],
+      'pager__apps_dashboard' => [
+        '#type' => 'pager',
+      ],
+    ];
+
+    $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Test failed on the empty search');
   }
+
 }

@@ -63,6 +63,8 @@ class AppsDashboardController extends ControllerBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @codeCoverageIgnore
    */
   public static function create(ContainerInterface $container) {
     return new static(
