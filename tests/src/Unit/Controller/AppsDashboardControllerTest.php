@@ -9,7 +9,9 @@ use Drupal\Tests\UnitTestCase;
 use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+
 /**
+ * @coversDefaultClass \Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController
  * @group sm_appdashboard_apigee
  */
 class AppsDashboardControllerTest extends UnitTestCase {
@@ -55,7 +57,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
       ->setConstructorArgs([
         $this->appsDashboardStorage->reveal(),
         $this->formBuilder->reveal(),
-        $this->requestStack->reveal()
+        $this->requestStack->reveal(),
       ])
       ->setMethods(['t'])
       ->getMock();
@@ -64,10 +66,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
   }
 
   /**
-   * Test the list apps on -
-   *   - On Empty Search
-   *   - On Empty labels
-   *   - On Empty App Details.
+   * Test the list apps on Empty Search, Empty labels and Empty App Details.
    */
   public function testListAppsOnEmpty() {
     $requestObject = $this->prophesize(Request::class);
@@ -79,7 +78,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
     $this->appsDashboardStorage->constructSort([], [])->willReturn([]);
 
     $result = [
-      'search__apps_dashboard' => null,
+      'search__apps_dashboard' => NULL,
       'table__apps_dashboard' => [
         '#type' => 'table',
         '#header' => [],
