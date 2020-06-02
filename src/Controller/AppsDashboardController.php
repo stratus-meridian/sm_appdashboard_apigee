@@ -227,7 +227,7 @@ class AppsDashboardController extends ControllerBase {
    * {@inheritdoc}
    */
   public function viewApp($apptype, $appid) {
-
+    // Initializing the variables.
     $data = $data_apiProducts = [];
     $edit_url = $return_url = '';
 
