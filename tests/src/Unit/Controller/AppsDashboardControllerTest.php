@@ -2,7 +2,10 @@
 
 namespace Drupal\Tests\sm_appdashboard_apigee\Unit;
 
+use Drupal\apigee_edge\Entity\DeveloperApp;
+use DateTimeImmutable;
 use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\sm_appdashboard_apigee\AppsDashboardStorageService;
 use Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController;
 use Drupal\Tests\UnitTestCase;
@@ -146,6 +149,63 @@ class AppsDashboardControllerTest extends UnitTestCase {
       ],
     ];
     $this->assertEquals($result, $this->appsDashboardController->viewApp('', ''));
+  }
+
+  /**
+   * Test list apps functionality with single app details.
+   */
+  public function testListAppsOnSingleAppDetails() {
+    $requestObject = $this->prophesize(Request::class);
+    $requestObject->get(Argument::any())->willReturn('');
+    $this->requestStack->getCurrentRequest()->willReturn($requestObject);
+
+    $labels = [
+      ['data' => 'App Display Name', 'field' => 'fieldDisplayName'],
+      ['data' => 'Developer Email', 'field' => 'fieldEmail'],
+      ['data' => 'Company', 'field' => 'fieldCompany'],
+      [
+        'data' => 'Overall App Status',
+        'field' => 'fieldStatus',
+        'sort' => 'desc',
+      ],
+      ['data' => 'Active user in the site?', 'field' => 'fieldOnwerActive'],
+      ['data' => 'App Date/Time Created', 'field' => 'fieldDateTimeCreated'],
+      ['data' => 'App Date/Time Modified', 'field' => 'fieldDateTimeModified'],
+      'labelOperations' => 'Operations',
+    ];
+    $this->appsDashboardStorage->labels()->willReturn($labels);
+
+
+    $developerAppEntity = $this->prophesize(DeveloperApp::class);
+    $developerAppEntity->getEntityTypeId()->willReturn('developer_app');
+    $developerAppEntity->getCreatedBy()->willReturn('accounts_apigee_admin@google.com');
+    $developerAppEntity->makeProphecyMethodCall('format', []);
+    $developerAppEntity->getCreatedAt()->willReturn();
+
+    $devAppsStorage = $this->prophesize(EntityTypeManagerInterface::class);
+    $devAppsStorage->getStorage(Argument::is('developer_app'))->willReturn(['123456' => $developerAppEntity]);
+
+
+    $this->appsDashboardStorage->getAllAppDetails()->willReturn(['123456' => $developerAppEntity]);
+    $this->appsDashboardStorage->getOverallStatus()->willReturn('approved');
+//    $this->appsDashboardStorage->constructPager([], 10)->willReturn([]);
+//    $this->appsDashboardStorage->constructSort([], [])->willReturn([]);
+
+    $result = [
+      'search__apps_dashboard' => NULL,
+      'table__apps_dashboard' => [
+        '#type' => 'table',
+        '#header' => $labels,
+        '#rows' => [],
+        '#empty' => 'No data found',
+      ],
+      'pager__apps_dashboard' => [
+        '#type' => 'pager',
+      ],
+    ];
+
+    $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Test failed on the empty search');
+    
   }
 
 }
