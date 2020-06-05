@@ -93,4 +93,59 @@ class AppsDashboardControllerTest extends UnitTestCase {
     $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Test failed on the empty search');
   }
 
+  /**
+   * Test the view app on empty app type and app id.
+   */
+  public function testViewAppOnEmpty() {
+    $this->appsDashboardStorage->getAppDetailsById('', '')->willReturn(NULL);
+    $this->appsDashboardStorage->getApiProducts()->willReturn([]);
+    $result = [
+      'details__app_details' => [
+        '#type' => 'details',
+        '#title' => 'App Details',
+        '#open' => TRUE,
+        'table__app_details' => [
+          '#type' => 'table',
+          '#rows' => [],
+        ],
+      ],
+      'details__api_products' => [
+        '#type' => 'details',
+        '#title' => 'API Products',
+        '#open' => TRUE,
+        'apiProducts' => [
+          '#type' => 'table',
+          '#rows' => [],
+          '#attributes' => [
+            'class' => [
+              'table__view__apps_dashboard__api_products',
+            ],
+          ],
+        ],
+      ],
+      'edit__action' => [
+        '#type' => 'link',
+        '#title' => 'Edit',
+        '#attributes' => [
+          'class' => [
+            'button',
+            'button--primary',
+          ],
+        ],
+        '#url' => '',
+      ],
+      'list__action' => [
+        '#type' => 'link',
+        '#title' => 'Back',
+        '#attributes' => [
+          'class' => [
+            'button',
+          ],
+        ],
+        '#url' => '',
+      ],
+    ];
+    $this->assertEquals($result, $this->appsDashboardController->viewApp('', ''));
+  }
+
 }

@@ -227,6 +227,10 @@ class AppsDashboardController extends ControllerBase {
    * {@inheritdoc}
    */
   public function viewApp($apptype, $appid) {
+    // Initializing the variables.
+    $data = $data_apiProducts = [];
+    $edit_url = $return_url = '';
+
     if (!isset($apptype) || !isset($appid)) {
       $this->messenger()->addError($this->t('There are errors encountered upon viewing the App Details.'));
       $path = Url::fromRoute('apps_dashboard.list', [])->toString();
@@ -237,102 +241,105 @@ class AppsDashboardController extends ControllerBase {
     // Load App Deails.
     $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
-    if ($app->getEntityTypeId() == 'developer_app') {
-      // Set Developer Apps owner active data.
-      $ownerEntity = $app->getOwner();
+    if (isset($app)) {
+      if ($app->getEntityTypeId() == 'developer_app') {
+        // Set Developer Apps owner active data.
+        $ownerEntity = $app->getOwner();
 
-      if ($ownerEntity) {
-        $appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? $this->t('yes') : $this->t('no'));
-      }
-      else {
-        $appOwnerActive = $this->t('no');
-      }
-
-      // Set Developer Apps email address data.
-      if ($app->getOwnerId()) {
         if ($ownerEntity) {
-          $appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
+          $appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? $this->t('yes') : $this->t('no'));
         }
+        else {
+          $appOwnerActive = $this->t('no');
+        }
+
+        // Set Developer Apps email address data.
+        if ($app->getOwnerId()) {
+          if ($ownerEntity) {
+            $appDeveloperEmail = ($ownerEntity->getEmail() ? $ownerEntity->getEmail() : '');
+          }
+        }
+        else {
+          $appDeveloperEmail = $app->getCreatedBy();
+        }
+
+        $appCompany = '';
       }
       else {
-        $appDeveloperEmail = $app->getCreatedBy();
+        // Set Team Apps company name.
+        $appDeveloperEmail = '';
+        $appCompany = $app->getCompanyName();
       }
 
-      $appCompany = '';
-    }
-    else {
-      // Set Team Apps company name.
-      $appDeveloperEmail = '';
-      $appCompany = $app->getCompanyName();
-    }
+      // Get App Credentials and API Products.
+      $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
-    // Get App Credentials and API Products.
-    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
+      // Get App Overall Status.
+      $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
-    // Get App Overall Status.
-    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
+      $data_apiProducts = [];
 
-    $data_apiProducts = [];
+      foreach ((array) $apiProducts as $apiProduct) {
+        $data_apiProducts[] = [
+          [
+            'data' => $apiProduct[0],
+            'header' => TRUE,
+          ],
+          $apiProduct[1],
+        ];
+      }
 
-    foreach ($apiProducts as $apiProduct) {
-      $data_apiProducts[] = [
+      // Plotting App Details into Table.
+      $data = [
         [
-          'data' => $apiProduct[0],
-          'header' => TRUE,
+          ['data' => 'App Type', 'header' => TRUE],
+          $apptype,
         ],
-        $apiProduct[1],
+        [
+          ['data' => 'App Display Name', 'header' => TRUE],
+          $app->getDisplayName(),
+        ],
+        [
+          ['data' => 'Internal Name', 'header' => TRUE],
+          $app->getName(),
+        ],
+        [
+          ['data' => 'Developer Email Address', 'header' => TRUE],
+          $appDeveloperEmail,
+        ],
+        [
+          ['data' => 'Company', 'header' => TRUE],
+          $appCompany,
+        ],
+        [
+          ['data' => 'Overall App Status', 'header' => TRUE],
+          $appOverallStatus,
+        ],
+        [
+          ['data' => 'Active User in the site?', 'header' => TRUE],
+          $appOwnerActive,
+        ],
+        [
+          ['data' => 'App Date/Time Created', 'header' => TRUE],
+          $app->getCreatedAt()->format('M. d, Y h:i A'),
+        ],
+        [
+          ['data' => 'App Date/Time Modified', 'header' => TRUE],
+          $app->getLastModifiedAt()->format('M. d, Y h:i A'),
+        ],
+        [
+          ['data' => 'Modified by', 'header' => TRUE],
+          $app->getLastModifiedBy(),
+        ],
       ];
+
+      $return_url = Url::fromRoute('apps_dashboard.list');
+      $edit_url = Url::fromRoute('apps_dashboard.edit', [
+        'apptype' => $app->getEntityTypeId(),
+        'appid' => $appid,
+      ]);
+
     }
-
-    // Plotting App Details into Table.
-    $data = [
-      [
-        ['data' => 'App Type', 'header' => TRUE],
-        $apptype,
-      ],
-      [
-        ['data' => 'App Display Name', 'header' => TRUE],
-        $app->getDisplayName(),
-      ],
-      [
-        ['data' => 'Internal Name', 'header' => TRUE],
-        $app->getName(),
-      ],
-      [
-        ['data' => 'Developer Email Address', 'header' => TRUE],
-        $appDeveloperEmail,
-      ],
-      [
-        ['data' => 'Company', 'header' => TRUE],
-        $appCompany,
-      ],
-      [
-        ['data' => 'Overall App Status', 'header' => TRUE],
-        $appOverallStatus,
-      ],
-      [
-        ['data' => 'Active User in the site?', 'header' => TRUE],
-        $appOwnerActive,
-      ],
-      [
-        ['data' => 'App Date/Time Created', 'header' => TRUE],
-        $app->getCreatedAt()->format('M. d, Y h:i A'),
-      ],
-      [
-        ['data' => 'App Date/Time Modified', 'header' => TRUE],
-        $app->getLastModifiedAt()->format('M. d, Y h:i A'),
-      ],
-      [
-        ['data' => 'Modified by', 'header' => TRUE],
-        $app->getLastModifiedBy(),
-      ],
-    ];
-
-    $return_url = Url::fromRoute('apps_dashboard.list');
-    $edit_url = Url::fromRoute('apps_dashboard.edit', [
-      'apptype' => $app->getEntityTypeId(),
-      'appid' => $appid,
-    ]);
 
     $display = [
       'details__app_details' => [
