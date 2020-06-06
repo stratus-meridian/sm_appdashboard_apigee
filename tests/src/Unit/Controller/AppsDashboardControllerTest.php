@@ -150,7 +150,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
   }
 
   /**
-   * Test list apps functionality with single app details.
+   * Test list apps functionality with single developer app details.
    */
   public function testListAppsOnSingleDeveloperAppDetails() {
     $requestObject = $this->prophesize(Request::class);
