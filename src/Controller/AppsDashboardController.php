@@ -247,6 +247,8 @@ class AppsDashboardController extends ControllerBase {
    *
    * @return object
    *   The Url object.
+   *
+   * @codeCoverageIgnore
    */
   protected function getUrlFromRoute($route_name, $route_parameters) {
     return Url::fromRoute($route_name, $route_parameters);
