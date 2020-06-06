@@ -125,7 +125,7 @@ class AppsDashboardController extends ControllerBase {
     foreach ($apps as $appKey => $app) {
       if ($app->getEntityTypeId() == 'developer_app') {
         // Set Developer Apps owner active data.
-        $ownerEntity = $app->getOwner();
+        $ownerEntity = $app->getOwner() ?? NULL;
 
         if ($ownerEntity) {
           $appOwnerActive = ($ownerEntity->get('status')->getValue()[0]['value'] == 1 ? $this->t('yes') : $this->t('no'));
@@ -156,15 +156,12 @@ class AppsDashboardController extends ControllerBase {
       $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
       // Setup actions (dropdown).
-      $view_url = Url::fromRoute('apps_dashboard.view', [
+      $route_parameters = [
         'apptype' => $app->getEntityTypeId(),
         'appid' => $appKey,
-      ]);
-
-      $edit_url = Url::fromRoute('apps_dashboard.edit', [
-        'apptype' => $app->getEntityTypeId(),
-        'appid' => $appKey,
-      ]);
+      ];
+      $view_url = $this->getUrlFromRoute('apps_dashboard.view', $route_parameters);
+      $edit_url = $this->getUrlFromRoute('apps_dashboard.edit', $route_parameters);
 
       $drop_button = [
         '#type' => 'dropbutton',
@@ -187,8 +184,8 @@ class AppsDashboardController extends ControllerBase {
         'fieldCompany' => $appCompany,
         'fieldStatus' => $appOverallStatus,
         'fieldOnwerActive' => $appOwnerActive,
-        'fieldDateTimeCreated' => $app->getCreatedAt()->format('M. d, Y h:i A'),
-        'fieldDateTimeModified' => $app->getlastModifiedAt()->format('M. d, Y h:i A'),
+        'fieldDateTimeCreated' => $this->formatDate($app->getCreatedAt(), 'M. d, Y h:i A'),
+        'fieldDateTimeModified' => $this->formatDate($app->getlastModifiedAt(), 'M. d, Y h:i A'),
         'actions' => [
           'data' => $drop_button,
         ],
@@ -223,6 +220,37 @@ class AppsDashboardController extends ControllerBase {
     return $form;
   }
 
+  /**
+   * Helper function to formatted date.
+   *
+   * @param object $dateObject
+   *   The Date immutable object.
+   * @param string $format_type
+   *
+   * @return string
+   *   The formatted date string.
+   *
+   * @codeCoverageIgnore
+   */
+  protected function formatDate($dateObject, $format_type) {
+    return $dateObject->format($format_type);
+  }
+
+  /**
+   * Helper function to get the url from route name.
+   *
+   * @param string $route_name
+   *   The route name.
+   *
+   * @param array $route_parameters
+   *   Array with details of app type and app id.
+   *
+   * @return object
+   *   The Url object.
+   */
+  protected function getUrlFromRoute($route_name, $route_parameters) {
+    return Url::fromRoute($route_name, $route_parameters);
+  }
   /**
    * {@inheritdoc}
    */

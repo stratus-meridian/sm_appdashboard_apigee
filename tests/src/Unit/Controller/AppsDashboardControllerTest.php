@@ -3,9 +3,7 @@
 namespace Drupal\Tests\sm_appdashboard_apigee\Unit;
 
 use Drupal\apigee_edge\Entity\DeveloperApp;
-use DateTimeImmutable;
 use Drupal\Core\Form\FormBuilder;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\sm_appdashboard_apigee\AppsDashboardStorageService;
 use Drupal\sm_appdashboard_apigee\Controller\AppsDashboardController;
 use Drupal\Tests\UnitTestCase;
@@ -62,7 +60,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
         $this->formBuilder->reveal(),
         $this->requestStack->reveal(),
       ])
-      ->setMethods(['t'])
+      ->setMethods(['t', 'formatDate', 'getUrlFromRoute'])
       ->getMock();
     // Define the t function to return the same value as parameter.
     $this->appsDashboardController->expects($this->any())->method('t')->will($this->returnArgument(0));
@@ -154,7 +152,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
   /**
    * Test list apps functionality with single app details.
    */
-  public function testListAppsOnSingleAppDetails() {
+  public function testListAppsOnSingleDeveloperAppDetails() {
     $requestObject = $this->prophesize(Request::class);
     $requestObject->get(Argument::any())->willReturn('');
     $this->requestStack->getCurrentRequest()->willReturn($requestObject);
@@ -175,28 +173,56 @@ class AppsDashboardControllerTest extends UnitTestCase {
     ];
     $this->appsDashboardStorage->labels()->willReturn($labels);
 
+    $this->appsDashboardController->expects($this->any())->method('formatDate')->willReturn('May. 02, 2020 01:23 AM');
+    $this->appsDashboardController->expects($this->any())->method('getUrlFromRoute')->will($this->onConsecutiveCalls('/view', '/edit'));
 
     $developerAppEntity = $this->prophesize(DeveloperApp::class);
     $developerAppEntity->getEntityTypeId()->willReturn('developer_app');
+    $developerAppEntity->getOwner()->willReturn('');
+    $developerAppEntity->getOwnerId()->willReturn('');
+    $developerAppEntity->getName()->willReturn('helloApp');
+    $developerAppEntity->getDisplayName()->willReturn('My test app');
     $developerAppEntity->getCreatedBy()->willReturn('accounts_apigee_admin@google.com');
-    $developerAppEntity->makeProphecyMethodCall('format', []);
-    $developerAppEntity->getCreatedAt()->willReturn();
-
-    $devAppsStorage = $this->prophesize(EntityTypeManagerInterface::class);
-    $devAppsStorage->getStorage(Argument::is('developer_app'))->willReturn(['123456' => $developerAppEntity]);
-
+    $developerAppEntity->getCreatedAt()->willReturn(null);
+    $developerAppEntity->getlastModifiedAt()->willReturn(null);
 
     $this->appsDashboardStorage->getAllAppDetails()->willReturn(['123456' => $developerAppEntity]);
-    $this->appsDashboardStorage->getOverallStatus()->willReturn('approved');
-//    $this->appsDashboardStorage->constructPager([], 10)->willReturn([]);
-//    $this->appsDashboardStorage->constructSort([], [])->willReturn([]);
+
+    $this->appsDashboardStorage->getOverallStatus(Argument::any())->willReturn('approved');
+    $this->appsDashboardStorage->constructPager(Argument::any(), 10)->willReturnArgument(0);
+    $this->appsDashboardStorage->constructSort(Argument::any(), $labels)->willReturnArgument(0);
 
     $result = [
       'search__apps_dashboard' => NULL,
       'table__apps_dashboard' => [
         '#type' => 'table',
         '#header' => $labels,
-        '#rows' => [],
+        '#rows' => [
+            [
+            'fieldDisplayName' => 'My test app [Internal Name: helloApp]',
+            'fieldEmail' => 'accounts_apigee_admin@google.com',
+            'fieldCompany' => '',
+            'fieldStatus' => 'approved',
+            'fieldOnwerActive' => 'no',
+            'fieldDateTimeCreated' => 'May. 02, 2020 01:23 AM',
+            'fieldDateTimeModified' => 'May. 02, 2020 01:23 AM',
+            'actions' => [
+              'data' => [
+                '#type' => 'dropbutton',
+                '#links' => [
+                  '#view' => [
+                    'title' => 'View',
+                    'url' => '/view',
+                  ],
+                  '#edit' => [
+                    'title' => 'Edit',
+                    'url' => '/edit',
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
         '#empty' => 'No data found',
       ],
       'pager__apps_dashboard' => [
@@ -204,7 +230,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
       ],
     ];
 
-    $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Test failed on the empty search');
+    $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Failed to render the single developer app.');
     
   }
 
