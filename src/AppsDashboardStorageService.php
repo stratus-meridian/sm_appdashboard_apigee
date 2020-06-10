@@ -72,8 +72,8 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $module_handler = \Drupal::service('module_handler');
     $apps = [];
 
-    $devApps_storage = $this->entityTypeManager->getStorage('developer_app');
-    $devApps = $devApps_storage->loadMultiple();
+    $devAppsStorage = $this->entityTypeManager->getStorage('developer_app');
+    $devApps = $devAppsStorage->loadMultiple();
 
     if ($module_handler->moduleExists('apigee_edge_teams')) {
       if ($teamApps_storage = $this->entityTypeManager->getStorage('team_app')) {
