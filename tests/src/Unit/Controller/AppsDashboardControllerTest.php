@@ -183,8 +183,8 @@ class AppsDashboardControllerTest extends UnitTestCase {
     $developerAppEntity->getName()->willReturn('helloApp');
     $developerAppEntity->getDisplayName()->willReturn('My test app');
     $developerAppEntity->getCreatedBy()->willReturn('accounts_apigee_admin@google.com');
-    $developerAppEntity->getCreatedAt()->willReturn(null);
-    $developerAppEntity->getlastModifiedAt()->willReturn(null);
+    $developerAppEntity->getCreatedAt()->willReturn(NULL);
+    $developerAppEntity->getlastModifiedAt()->willReturn(NULL);
 
     $this->appsDashboardStorage->getAllAppDetails()->willReturn(['123456' => $developerAppEntity]);
 
@@ -198,7 +198,7 @@ class AppsDashboardControllerTest extends UnitTestCase {
         '#type' => 'table',
         '#header' => $labels,
         '#rows' => [
-            [
+          [
             'fieldDisplayName' => 'My test app [Internal Name: helloApp]',
             'fieldEmail' => 'accounts_apigee_admin@google.com',
             'fieldCompany' => '',
@@ -231,7 +231,6 @@ class AppsDashboardControllerTest extends UnitTestCase {
     ];
 
     $this->assertEquals($result, $this->appsDashboardController->listApps(), 'Failed to render the single developer app.');
-    
   }
 
   /**
@@ -270,8 +269,8 @@ class AppsDashboardControllerTest extends UnitTestCase {
     $developerAppEntity->getName()->willReturn('helloApp');
     $developerAppEntity->getDisplayName()->willReturn('My test app');
     $developerAppEntity->getCreatedBy()->willReturn('accounts_apigee_admin@google.com');
-    $developerAppEntity->getCreatedAt()->willReturn(null);
-    $developerAppEntity->getlastModifiedAt()->willReturn(null);
+    $developerAppEntity->getCreatedAt()->willReturn(NULL);
+    $developerAppEntity->getlastModifiedAt()->willReturn(NULL);
 
     $this->appsDashboardStorage->searchByDates(Argument::any(), Argument::any())->willReturn(['123456' => $developerAppEntity]);
 
