@@ -226,6 +226,7 @@ class AppsDashboardController extends ControllerBase {
    * @param object $dateObject
    *   The Date immutable object.
    * @param string $format_type
+   *   The date format type.
    *
    * @return string
    *   The formatted date string.
@@ -253,6 +254,7 @@ class AppsDashboardController extends ControllerBase {
   protected function getUrlFromRoute($route_name, $route_parameters) {
     return Url::fromRoute($route_name, $route_parameters);
   }
+
   /**
    * {@inheritdoc}
    */
