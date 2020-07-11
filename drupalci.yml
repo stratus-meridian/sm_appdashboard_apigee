@@ -1,20 +1,21 @@
+# This is the DrupalCI testbot build file for Dynamic Entity Reference.
+# Learn to make one for your own drupal.org project:
+# https://www.drupal.org/drupalorg/docs/drupal-ci/customizing-drupalci-testing
 build:
   assessment:
     validate_codebase:
       phplint:
-      csslint:
-        halt-on-fail: false
-      eslint:
-        halt-on-fail: false
       phpcs:
-        sniff-all-files: false
-        halt-on-fail: false
+        # phpcs will use core's specified version of Coder.
+        sniff-all-files: true
+        halt-on-fail: true
     testing:
-      # container command below updates phpunit as an additional build step for core, for example.
-      container_command :
-        commands: "cd ${SOURCE_DIR} && sudo -u www-data composer update phpunit/phpunit --with-dependencies"
+      # run_tests task is executed several times in order of performance speeds.
+      # halt-on-fail can be set on the run_tests tasks in order to fail fast.
+      # suppress-deprecations is false in order to be alerted to usages of
+      # deprecated code.
       run_tests.phpunit:
-        types: '--class "Drupal\Tests\sm_appdashboard_apigee\Unit\AppsDashboardControllerTest"'
+        types: 'PHPUnit-Unit'
         testgroups: '--all'
         suppress-deprecations: false
         halt-on-fail: false
