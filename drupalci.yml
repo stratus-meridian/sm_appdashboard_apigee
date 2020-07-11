@@ -10,11 +10,8 @@ build:
         sniff-all-files: false
         halt-on-fail: false
     testing:
-      # container command below updates phpunit as an additional build step for core, for example.
-      container_command :
-        commands: "cd ${SOURCE_DIR} && sudo -u www-data composer update phpunit/phpunit --with-dependencies"
       run_tests.phpunit:
-        types: 'PHPUnit-Unit'
+        types: '--class "Drupal\Tests\sm_appdashboard_apigee\Unit\AppsDashboardControllerTest"'
         testgroups: '--all'
         suppress-deprecations: false
         halt-on-fail: false
