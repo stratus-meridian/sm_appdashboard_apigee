@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\sm_appdashboard_apigee\Unit\controller;
+namespace Drupal\Tests\sm_appdashboard_apigee\Unit\Controller;
 
 use Drupal\apigee_edge\Entity\DeveloperApp;
 use Drupal\Core\Form\FormBuilder;
