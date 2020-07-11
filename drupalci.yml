@@ -5,7 +5,7 @@ build:
       csslint:
         halt-on-fail: false
       eslint:
-        halt-on-fail: true
+        halt-on-fail: false
       phpcs:
         sniff-all-files: false
         halt-on-fail: false
