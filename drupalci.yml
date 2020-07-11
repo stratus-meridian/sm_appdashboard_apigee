@@ -19,19 +19,3 @@ build:
         testgroups: '--all'
         suppress-deprecations: false
         halt-on-fail: false
-      run_tests.kernel:
-        types: 'PHPUnit-Kernel'
-        testgroups: '--all'
-        suppress-deprecations: false
-        halt-on-fail: false
-      run_tests.functional:
-        types: 'PHPUnit-Functional'
-        testgroups: '--all'
-        suppress-deprecations: false
-        halt-on-fail: false
-      run_tests.javascript:
-        concurrency: 15
-        types: 'PHPUnit-FunctionalJavascript'
-        testgroups: '--all'
-        suppress-deprecations: false
-        halt-on-fail: false
