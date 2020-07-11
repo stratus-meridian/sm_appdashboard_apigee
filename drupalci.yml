@@ -1,0 +1,20 @@
+build:
+  assessment:
+    validate_codebase:
+      phplint:
+      csslint:
+        halt-on-fail: false
+      eslint:
+        halt-on-fail: true
+      phpcs:
+        sniff-all-files: false
+        halt-on-fail: false
+    testing:
+      # container command below updates phpunit as an additional build step for core, for example.
+      container_command :
+        commands: "cd ${SOURCE_DIR} && sudo -u www-data composer update phpunit/phpunit --with-dependencies"
+      run_tests.phpunit:
+        types: 'PHPUnit-Unit'
+        testgroups: '--all'
+        suppress-deprecations: false
+        halt-on-fail: false
