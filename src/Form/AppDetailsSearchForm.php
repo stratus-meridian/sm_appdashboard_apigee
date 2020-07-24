@@ -52,7 +52,7 @@ class AppDetailsSearchForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'appdetails_search_form';
+    return 'sm_appdashboard_apigee_appdetails_search_form';
   }
 
   /**
