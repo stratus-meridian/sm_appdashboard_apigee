@@ -11,8 +11,8 @@ INTRODUCTION
 ------------
 
 Stratus Meridian' App dashboard for Apigee integrates with Apigee Edge module 
-and provides a dashboard for Apps created on Developer portal. 
-The following steps can be performed using this module
+and provides a dashboard for Apps created on Developer portal. The following 
+steps can be performed using this module
 
 1. Approve or Revoke access to any App via Developer portal, 
 instead of performing this action on Edge
@@ -36,5 +36,4 @@ Install as any Drupal module.
 CONFIGURATION
 -----------------
 Once module is enabled, you will be prompted to **re-sync data from Edge**. 
-Once completed you can navigate to the dashboard from 
-`/admin/config/apigee-edge/apps-dashboard`
+Once completed you can navigate to the dashboard from `/admin/config/apigee-edge/apps-dashboard`

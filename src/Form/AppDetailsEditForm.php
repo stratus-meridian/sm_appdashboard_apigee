@@ -77,7 +77,7 @@ class AppDetailsEditForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'appdetails__edit';
+    return 'sm_appdashboard_apigee_appdetails_edit';
   }
 
   /**
@@ -218,23 +218,23 @@ class AppDetailsEditForm extends FormBase {
         '#open' => TRUE,
         'api_products' => $data_apiProducts,
         'app_consumer_key' => [
-          '#type' => 'hidden',
+          '#type' => 'value',
           '#value' => $appCredentials[0]->getConsumerKey(),
         ],
         'app_developer_email' => [
-          '#type' => 'hidden',
+          '#type' => 'value',
           '#value' => $appDeveloperEmail,
         ],
         'app_company' => [
-          '#type' => 'hidden',
+          '#type' => 'value',
           '#value' => $appCompany,
         ],
         'app_internal_name' => [
-          '#type' => 'hidden',
+          '#type' => 'value',
           '#value' => rawurlencode($app->getName()),
         ],
         'app_entity_type' => [
-          '#type' => 'hidden',
+          '#type' => 'value',
           '#value' => $apptype,
         ],
       ],

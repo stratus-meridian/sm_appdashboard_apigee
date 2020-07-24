@@ -108,7 +108,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function searchBy($key, $type) {
-    $apps = AppsDashboardStorageService::getAllAppDetails();
+    $apps = $this->getAllAppDetails();
     $app = [];
 
     foreach ($apps as $appKey => $appDetails) {
@@ -119,7 +119,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
         $getCompareKey = $appDetails->getDisplayName();
       }
       elseif ($type == 'overall_app_status') {
-        $getCompareKey = AppsDashboardStorageService::getOverallStatus($appDetails);
+        $getCompareKey = $this->getOverallStatus($appDetails);
       }
       elseif ($type == 'company') {
         if ($appDetails->getEntityTypeId() !== 'developer_app') {
@@ -139,7 +139,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function searchByDates($datetime, $type) {
-    $apps = AppsDashboardStorageService::getAllAppDetails();
+    $apps = $this->getAllAppDetails();
 
     $datetime_from = strtotime($datetime['from']['date'] . ' ' . $datetime['from']['time']);
     $datetime_to = strtotime($datetime['to']['date'] . ' ' . $datetime['to']['time']);
