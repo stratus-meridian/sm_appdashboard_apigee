@@ -77,7 +77,7 @@ class AppDetailsEditForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'appdetails__edit';
+    return 'sm_appdashboard_apigee_appdetails_edit';
   }
 
   /**
