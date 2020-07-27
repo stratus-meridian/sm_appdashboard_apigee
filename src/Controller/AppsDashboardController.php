@@ -21,7 +21,6 @@ namespace Drupal\sm_appdashboard_apigee\Controller;
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-use Drupal\apigee_edge\Entity\App;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
@@ -313,13 +312,13 @@ class AppsDashboardController extends ControllerBase {
       $data_apiProducts = [];
 
       $i = 1;
-      foreach($app->getCredentials() as $credential) {
+      foreach ($app->getCredentials() as $credential) {
         $data_apiProducts[$credential->id()] = [
           '#type' => 'fieldset',
-          '#title' => 'Credential '. $i++
+          '#title' => 'Credential ' . $i++,
         ];
         $product_status = [];
-        foreach($credential->getApiProducts() as $apiProduct) {
+        foreach ($credential->getApiProducts() as $apiProduct) {
           $product_status[] = [
             [
               'data' => $apiProduct->getApiproduct(),
@@ -429,7 +428,7 @@ class AppsDashboardController extends ControllerBase {
           ],
           '#url' => $return_url,
         ],
-      ]
+      ],
     ];
 
     return $display;
