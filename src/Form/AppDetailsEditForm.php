@@ -67,6 +67,21 @@ class AppDetailsEditForm extends FormBase {
   protected $messenger;
 
   /**
+   * DeveloperAppCredentialControllerFactoryInterface definition.
+   *
+   * @var \Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface
+   */
+  protected $developerAppCredentialControllerFactory;
+
+  /**
+   * TeamAppCredentialControllerFactoryInterface definition.
+   *
+   * @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface
+   *
+   */
+  protected $teamAppCredentialControllerFactory;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -74,6 +89,8 @@ class AppDetailsEditForm extends FormBase {
     $instance->connector = $container->get('apigee_edge.sdk_connector');
     $instance->appsDashboardStorage = $container->get('sm_appsdashboard_apigee.appsdashboard_storage');
     $instance->messenger = $container->get('messenger');
+    $instance->developerAppCredentialControllerFactory = $container->get('apigee_edge.controller.developer_app_credential_factory');
+    $instance->teamAppCredentialControllerFactory = $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory');
     return $instance;
   }
 
@@ -290,16 +307,13 @@ class AppDetailsEditForm extends FormBase {
 
     try {
       $values = $form_state->getValues();
-      /* @var  $developerAppCredentialControllerFactory DeveloperAppCredentialControllerFactoryInterface */
-      $developerAppCredentialControllerFactory = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
-      /* @var $teamAppCredentialControllerFactory TeamAppCredentialControllerFactoryInterface */
-      $teamAppCredentialControllerFactory = \Drupal::service('apigee_edge_teams.controller.team_app_credential_controller_factory');
+
       /* @var $credentialController AppCredentialControllerInterface */
       $credentialController = null;
       if ($values['details__api_products']['app_entity_type'] == 'developer_app') {
-        $credentialController = $developerAppCredentialControllerFactory->developerAppCredentialController($values['details__api_products']['app_developer_email'], $values['details__api_products']['app_internal_name']);
+        $credentialController = $this->developerAppCredentialControllerFactory->developerAppCredentialController($values['details__api_products']['app_developer_email'], $values['details__api_products']['app_internal_name']);
       } else {
-        $credentialController = $teamAppCredentialControllerFactory->teamAppCredentialController($values['details__api_products']['app_company'], $values['details__api_products']['app_internal_name']);
+        $credentialController = $this->teamAppCredentialControllerFactory->teamAppCredentialController($values['details__api_products']['app_company'], $values['details__api_products']['app_internal_name']);
       }
 
       foreach ($values['details__api_products']['app_credentials'] as $key => $credential) {
