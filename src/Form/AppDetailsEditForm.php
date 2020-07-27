@@ -21,18 +21,11 @@ namespace Drupal\sm_appdashboard_apigee\Form;
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-use Apigee\Edge\Api\Management\Controller\DeveloperAppController;
-use Apigee\Edge\Api\Management\Controller\DeveloperAppCredentialController;
-use Apigee\Edge\Api\Management\Controller\CompanyAppController;
-use Apigee\Edge\Api\Management\Controller\CompanyAppCredentialController;
 use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
-use Drupal\apigee_edge\Entity\App;
 use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
-use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
-use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use DrupalCore\Link;
@@ -77,7 +70,6 @@ class AppDetailsEditForm extends FormBase {
    * TeamAppCredentialControllerFactoryInterface definition.
    *
    * @var \Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface
-   *
    */
   protected $teamAppCredentialControllerFactory;
 
@@ -162,7 +154,7 @@ class AppDetailsEditForm extends FormBase {
 
     $data_apiProducts = [];
 
-    foreach($app->getCredentials() as $credential){
+    foreach ($app->getCredentials() as $credential) {
       $data_apiProducts[$credential->id()] = [
         '#type' => 'fieldset',
         '#title' => 'Credential #' . $i++,
@@ -171,22 +163,23 @@ class AppDetailsEditForm extends FormBase {
           '#value' => $credential->getConsumerKey(),
         ],
       ];
-      foreach($credential->getApiProducts() as $apiProduct)
-      $data_apiProducts[$credential->id()]['apiproduct'][$apiProduct->getApiProduct()]=[
-        '#type' => 'select',
-        '#title' => $apiProduct->getApiProduct(),
-        '#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
-        '#options' => [
-          'approved' => $this->t('approved'),
-          'revoked' => $this->t('revoked'),
-        ],
-        '#default_value' => $apiProduct->getStatus(),
-      ];
+      foreach ($credential->getApiProducts() as $apiProduct) {
+        $data_apiProducts[$credential->id()]['apiproduct'][$apiProduct->getApiProduct()] = [
+          '#type' => 'select',
+          '#title' => $apiProduct->getApiProduct(),
+          '#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
+          '#options' => [
+            'approved' => $this->t('approved'),
+            'revoked' => $this->t('revoked'),
+          ],
+          '#default_value' => $apiProduct->getStatus(),
+        ];
+      }
+
     }
 
     // Get App Overall Status.
     $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
-
 
     // Plotting App Details into Table.
     $data = [
@@ -309,10 +302,11 @@ class AppDetailsEditForm extends FormBase {
       $values = $form_state->getValues();
 
       /* @var $credentialController AppCredentialControllerInterface */
-      $credentialController = null;
+      $credentialController = NULL;
       if ($values['details__api_products']['app_entity_type'] == 'developer_app') {
         $credentialController = $this->developerAppCredentialControllerFactory->developerAppCredentialController($values['details__api_products']['app_developer_email'], $values['details__api_products']['app_internal_name']);
-      } else {
+      }
+      else {
         $credentialController = $this->teamAppCredentialControllerFactory->teamAppCredentialController($values['details__api_products']['app_company'], $values['details__api_products']['app_internal_name']);
       }
 
@@ -343,4 +337,5 @@ class AppDetailsEditForm extends FormBase {
       $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err, 'status');
     }
   }
+
 }
