@@ -29,6 +29,10 @@ use Apigee\Edge\Exception\ApiException;
 use Apigee\Edge\Exception\ApiRequestException;
 use Apigee\Edge\Exception\ClientErrorException;
 use Apigee\Edge\Exception\ServerErrorException;
+use Drupal\apigee_edge\Entity\App;
+use Drupal\apigee_edge\Entity\Controller\AppCredentialControllerInterface;
+use Drupal\apigee_edge\Entity\Controller\DeveloperAppCredentialControllerFactoryInterface;
+use Drupal\apigee_edge_teams\Entity\Controller\TeamAppCredentialControllerFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use DrupalCore\Link;
@@ -101,6 +105,7 @@ class AppDetailsEditForm extends FormBase {
     }
 
     // Load App Details.
+    /* @var $app App*/
     $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if ($app->getEntityTypeId() == 'developer_app') {
@@ -135,28 +140,36 @@ class AppDetailsEditForm extends FormBase {
 
     // Get App Credentials and API Products.
     $appCredentials = $app->getCredentials();
-    $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
 
-    // Get App Overall Status.
-    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
+    $i = 1;
 
     $data_apiProducts = [];
 
-    // Get API Products.
-    $i = 0;
-    foreach ($apiProducts as $apiProduct) {
-      $data_apiProducts['selectbox_products_' . $i] = [
+    foreach($app->getCredentials() as $credential){
+      $data_apiProducts[$credential->id()] = [
+        '#type' => 'fieldset',
+        '#title' => 'Credential #' . $i++,
+        'app_consumer_key' => [
+          '#type' => 'value',
+          '#value' => $credential->getConsumerKey(),
+        ],
+      ];
+      foreach($credential->getApiProducts() as $apiProduct)
+      $data_apiProducts[$credential->id()]['apiproduct'][$apiProduct->getApiProduct()]=[
         '#type' => 'select',
-        '#title' => $apiProduct[0],
+        '#title' => $apiProduct->getApiProduct(),
         '#description' => $this->t('Set action to <strong>approved</strong> or <strong>revoked</strong>.'),
         '#options' => [
           'approved' => $this->t('approved'),
           'revoked' => $this->t('revoked'),
         ],
-        '#default_value' => $apiProduct[1],
+        '#default_value' => $apiProduct->getStatus(),
       ];
-      $i++;
     }
+
+    // Get App Overall Status.
+    $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
+
 
     // Plotting App Details into Table.
     $data = [
@@ -214,13 +227,10 @@ class AppDetailsEditForm extends FormBase {
       ],
       'details__api_products' => [
         '#type' => 'details',
-        '#title' => $this->t('API Products'),
+        '#title' => $this->t('Credentials'),
         '#open' => TRUE,
-        'api_products' => $data_apiProducts,
-        'app_consumer_key' => [
-          '#type' => 'value',
-          '#value' => $appCredentials[0]->getConsumerKey(),
-        ],
+        '#tree' => TRUE,
+        'app_credentials' => $data_apiProducts,
         'app_developer_email' => [
           '#type' => 'value',
           '#value' => $appDeveloperEmail,
@@ -277,105 +287,46 @@ class AppDetailsEditForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Get API Products (Name and selected Status).
-    $formSelectBoxApiProducts = $form['details__api_products']['api_products'];
 
-    $val_apiproducts = [];
-
-    // Array push API Products to $val_apiproducts.
-    foreach ($formSelectBoxApiProducts as $selectboxKey => $selectboxValue) {
-      if ($this->appsDashboardStorage->startsWith($selectboxKey, 'selectbox_products') == TRUE) {
-        array_push($val_apiproducts, [
-          'apiproducts_name' => $selectboxValue['#title'],
-          'apiproducts_status' => $form_state->getValue($selectboxKey),
-        ]);
+    try {
+      $values = $form_state->getValues();
+      /* @var  $developerAppCredentialControllerFactory DeveloperAppCredentialControllerFactoryInterface */
+      $developerAppCredentialControllerFactory = \Drupal::service('apigee_edge.controller.developer_app_credential_factory');
+      /* @var $teamAppCredentialControllerFactory TeamAppCredentialControllerFactoryInterface */
+      $teamAppCredentialControllerFactory = \Drupal::service('apigee_edge_teams.controller.team_app_credential_controller_factory');
+      /* @var $credentialController AppCredentialControllerInterface */
+      $credentialController = null;
+      if ($values['details__api_products']['app_entity_type'] == 'developer_app') {
+        $credentialController = $developerAppCredentialControllerFactory->developerAppCredentialController($values['details__api_products']['app_developer_email'], $values['details__api_products']['app_internal_name']);
+      } else {
+        $credentialController = $teamAppCredentialControllerFactory->teamAppCredentialController($values['details__api_products']['app_company'], $values['details__api_products']['app_internal_name']);
       }
+
+      foreach ($values['details__api_products']['app_credentials'] as $key => $credential) {
+        foreach ($values['details__api_products']['app_credentials'][$key]['apiproduct'] as $product_name => $product_status) {
+          $credentialController->setApiProductStatus($credential['app_consumer_key'], $product_name,
+            $product_status == 'approved' ? AppCredentialControllerInterface::STATUS_APPROVE : AppCredentialControllerInterface::STATUS_REVOKE);
+        }
+      }
+      $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
+      $form_state->setRedirect('apps_dashboard.list');
     }
-
-    if ($form_state->getValue('app_entity_type') == 'developer_app') {
-      // Open New Developer App Controller.
-      $devAppController = new DeveloperAppController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $this->connector->getClient());
-
-      // Create a try/catch to test the connection of DevApp Controller.
-      try {
-        // Open Developer App Credentials' Controller.
-        $devAppCredentialsController = new DeveloperAppCredentialController($this->connector->getOrganization(), $form_state->getValue('app_developer_email'), $form_state->getValue('app_internal_name'), $this->connector->getClient());
-
-        // Set/save the new status of API Products.
-        foreach ($val_apiproducts as $val_apiproduct) {
-          $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? DeveloperAppCredentialController::STATUS_APPROVE : DeveloperAppCredentialController::STATUS_REVOKE);
-          $devAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
-        }
-
-        // Close all open controllers.
-        $devAppCredentialsController = NULL;
-        $devAppController = NULL;
-
-        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
-        $form_state->setRedirect('apps_dashboard.list');
+    catch (ClientErrorException $err) {
+      if ($err->getEdgeErrorCode()) {
+        $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
       }
-      catch (ClientErrorException $err) {
-        if ($err->getEdgeErrorCode()) {
-          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
-        }
-        else {
-          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-        }
-      }
-      catch (ServerErrorException $err) {
-        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-      }
-      catch (ApiRequestException $err) {
-        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-      }
-      catch (ApiException $err) {
+      else {
         $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
       }
     }
-    else {
-      // Open New Company App Controller.
-      $compAppController = new CompanyAppController($this->connector->getOrganization(), $form_state->getValue('app_company'), $this->connector->getClient());
-
-      try {
-        // Open Company App Credentials' Controller.
-        $compAppCredentialsController = new CompanyAppCredentialController(
-          $this->connector->getOrganization(),
-          $form_state->getValue('app_company'),
-          $form_state->getValue('app_internal_name'),
-          $this->connector->getClient()
-        );
-
-        // Set/save the new status of API Products.
-        foreach ($val_apiproducts as $val_apiproduct) {
-          $apiProductStatus = ($val_apiproduct['apiproducts_status'] == 'approved' ? CompanyAppCredentialController::STATUS_APPROVE : CompanyAppCredentialController::STATUS_REVOKE);
-          $compAppCredentialsController->setApiProductStatus($form_state->getValue('app_consumer_key'), $val_apiproduct['apiproducts_name'], $apiProductStatus);
-        }
-
-        // Close all open controllers.
-        $compAppCredentialsController = NULL;
-        $compAppController = NULL;
-
-        $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
-        $form_state->setRedirect('apps_dashboard.list');
-      }
-      catch (ClientErrorException $err) {
-        if ($err->getEdgeErrorCode()) {
-          $this->messenger()->addError($this->t('There is an error encountered. Error Code:') . $err->getEdgeErrorCode());
-        }
-        else {
-          $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-        }
-      }
-      catch (ServerErrorException $err) {
-        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-      }
-      catch (ApiRequestException $err) {
-        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
-      }
-      catch (ApiException $err) {
-        $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err, 'status');
-      }
+    catch (ServerErrorException $err) {
+      $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
+    }
+    catch (ApiRequestException $err) {
+      $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err);
+    }
+    catch (ApiException $err) {
+      $this->messenger()->addStatus($this->t('There is an error encountered. Error Code:') . $err, 'status');
     }
   }
-
 }
