@@ -270,6 +270,7 @@ class AppsDashboardController extends ControllerBase {
     }
 
     // Load App Deails.
+    /* @var $app App*/
     $app = $this->appsDashboardStorage->getAppDetailsById($apptype, $appid);
 
     if (isset($app)) {
@@ -310,13 +311,30 @@ class AppsDashboardController extends ControllerBase {
 
       $data_apiProducts = [];
 
-      foreach ((array) $apiProducts as $apiProduct) {
-        $data_apiProducts[] = [
-          [
-            'data' => $apiProduct[0],
-            'header' => TRUE,
+      $i = 1;
+      foreach ($app->getCredentials() as $credential) {
+        $data_apiProducts[$credential->id()] = [
+          '#type' => 'fieldset',
+          '#title' => 'Credential ' . $i++,
+        ];
+        $product_status = [];
+        foreach ($credential->getApiProducts() as $apiProduct) {
+          $product_status[] = [
+            [
+              'data' => $apiProduct->getApiproduct(),
+              'header' => TRUE,
+            ],
+            $apiProduct->getStatus(),
+          ];
+        }
+        $data_apiProducts[$credential->id()]['products'] = [
+          '#type' => 'table',
+          '#rows' => $product_status,
+          '#attributes' => [
+            'class' => [
+              'table__view__apps_dashboard__api_products',
+            ],
           ],
-          $apiProduct[1],
         ];
       }
 
@@ -384,38 +402,32 @@ class AppsDashboardController extends ControllerBase {
       ],
       'details__api_products' => [
         '#type' => 'details',
-        '#title' => $this->t('API Products'),
+        '#title' => $this->t('Credentials'),
         '#open' => TRUE,
-        'apiProducts' => [
-          '#type' => 'table',
-          '#rows' => $data_apiProducts,
+        'app_credentials' => $data_apiProducts,
+      ],
+      'actions' => [
+        'edit__action' => [
+          '#type' => 'link',
+          '#title' => $this->t('Edit'),
           '#attributes' => [
             'class' => [
-              'table__view__apps_dashboard__api_products',
+              'button',
+              'button--primary',
             ],
           ],
+          '#url' => $edit_url,
         ],
-      ],
-      'edit__action' => [
-        '#type' => 'link',
-        '#title' => $this->t('Edit'),
-        '#attributes' => [
-          'class' => [
-            'button',
-            'button--primary',
+        'list__action' => [
+          '#type' => 'link',
+          '#title' => $this->t('Back'),
+          '#attributes' => [
+            'class' => [
+              'button',
+            ],
           ],
+          '#url' => $return_url,
         ],
-        '#url' => $edit_url,
-      ],
-      'list__action' => [
-        '#type' => 'link',
-        '#title' => $this->t('Back'),
-        '#attributes' => [
-          'class' => [
-            'button',
-          ],
-        ],
-        '#url' => $return_url,
       ],
     ];
 

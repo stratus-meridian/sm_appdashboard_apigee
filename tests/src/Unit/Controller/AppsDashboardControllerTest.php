@@ -112,38 +112,32 @@ class AppsDashboardControllerTest extends UnitTestCase {
       ],
       'details__api_products' => [
         '#type' => 'details',
-        '#title' => 'API Products',
+        '#title' => 'Credentials',
         '#open' => TRUE,
-        'apiProducts' => [
-          '#type' => 'table',
-          '#rows' => [],
+        'app_credentials' => [],
+      ],
+      'actions' => [
+        'edit__action' => [
+          '#type' => 'link',
+          '#title' => 'Edit',
           '#attributes' => [
             'class' => [
-              'table__view__apps_dashboard__api_products',
+              'button',
+              'button--primary',
             ],
           ],
+          '#url' => '',
         ],
-      ],
-      'edit__action' => [
-        '#type' => 'link',
-        '#title' => 'Edit',
-        '#attributes' => [
-          'class' => [
-            'button',
-            'button--primary',
+        'list__action' => [
+          '#type' => 'link',
+          '#title' => 'Back',
+          '#attributes' => [
+            'class' => [
+              'button',
+            ],
           ],
+          '#url' => '',
         ],
-        '#url' => '',
-      ],
-      'list__action' => [
-        '#type' => 'link',
-        '#title' => 'Back',
-        '#attributes' => [
-          'class' => [
-            'button',
-          ],
-        ],
-        '#url' => '',
       ],
     ];
     $this->assertEquals($result, $this->appsDashboardController->viewApp('', ''));
