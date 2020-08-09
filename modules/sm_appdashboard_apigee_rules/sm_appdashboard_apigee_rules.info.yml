@@ -1,0 +1,12 @@
+name: Stratus Meridian's App Dashboard for Apigee with Rules integration
+description: 'Rules integration for Stratus Meridian''s App Dashboard for Apigee module.'
+package: 'Stratus Meridian'
+
+type: module
+core: 8.x
+
+core_version_requirement: ^8 || ^9
+dependencies:
+  - apigee_edge:apigee_edge
+  - sm_appdashboard_apigee:sm_appdashboard_apigee
+  - rules:rules
