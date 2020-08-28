@@ -101,7 +101,7 @@ class AppStatusUpdateEventDeriver extends DeriverBase implements ContainerDerive
    * {@inheritdoc}
    */
   public function getLabel(EdgeEntityTypeInterface $entity_type): string {
-    return $this->t('After the apps status getting changed from Apps Dashboard.');
+    return $this->t('After API product status getting changed from Apps Dashboard.');
   }
 
 }
