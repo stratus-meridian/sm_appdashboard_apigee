@@ -1,0 +1,3 @@
+sm_appdashboard_apigee_rules_apps_status_change:
+  deriver: '\Drupal\sm_appdashboard_apigee_rules\Plugin\RulesEvent\AppStatusUpdateEventDeriver'
+  event: 'update_product'
