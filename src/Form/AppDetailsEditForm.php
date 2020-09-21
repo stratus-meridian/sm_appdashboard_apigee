@@ -74,6 +74,20 @@ class AppDetailsEditForm extends FormBase {
   protected $teamAppCredentialControllerFactory;
 
   /**
+   * ModuleHandlerInterface definition.
+   *
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * EventDispatcherInterface definition.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -83,6 +97,8 @@ class AppDetailsEditForm extends FormBase {
     $instance->messenger = $container->get('messenger');
     $instance->developerAppCredentialControllerFactory = $container->get('apigee_edge.controller.developer_app_credential_factory');
     $instance->teamAppCredentialControllerFactory = $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory');
+    $instance->moduleHandler = $container->get('module_handler');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
     return $instance;
   }
 
@@ -316,6 +332,12 @@ class AppDetailsEditForm extends FormBase {
             $product_status == 'approved' ? AppCredentialControllerInterface::STATUS_APPROVE : AppCredentialControllerInterface::STATUS_REVOKE);
         }
       }
+
+      // Checking if the sm_appdashboard_apigee_rules is enabled or not.
+      if ($this->moduleHandler->moduleExists('sm_appdashboard_apigee_rules')) {
+        $this->eventDispatcher->dispatch('sm_appdashboard_apigee_rules_apps_status_change');
+      }
+
       $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
       $form_state->setRedirect('apps_dashboard.list');
     }
