@@ -26,10 +26,6 @@
     "source": "http://cgit.drupalcode.org/sm_appdashboard_apigee"
   },
   "license": "GPL-2.0-or-later",
-  "minimum-stability": "dev",
-  "require": {
-    "drupal/core": "^8.7.7 || ^9"
-  },
   "require-dev": {
     "drupal/apigee_edge": "1.17"
   }
