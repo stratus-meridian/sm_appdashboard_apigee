@@ -30,6 +30,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use DrupalCore\Link;
 use Drupal\Core\Url;
+use Drupal\sm_appdashboard_apigee_rules\Event\AppdashboardEvent;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -242,6 +243,14 @@ class AppDetailsEditForm extends FormBase {
     ];
 
     $form = [
+      'app_type' => [
+        '#type' => 'hidden',
+        '#value' => $apptype,
+      ],
+      'app_id' => [
+        '#type' => 'hidden',
+        '#value' => $appid,
+      ],
       'details__app_details' => [
         '#type' => 'details',
         '#title' => $this->t('App Details'),
@@ -335,7 +344,11 @@ class AppDetailsEditForm extends FormBase {
 
       // Checking if the sm_appdashboard_apigee_rules is enabled or not.
       if ($this->moduleHandler->moduleExists('sm_appdashboard_apigee_rules')) {
-        $this->eventDispatcher->dispatch('sm_appdashboard_apigee_rules_apps_status_change');
+        $app_entity_type = $form_state->getValue('app_type');
+        $app_entity_id = $form_state->getValue('app_id');
+        $app_entity = $this->appsDashboardStorage->getAppDetailsById($app_entity_type, $app_entity_id);
+        $event = new AppdashboardEvent($app_entity);
+        $this->eventDispatcher->dispatch(AppdashboardEvent::APP_STATUS_CHANGE, $event);
       }
 
       $this->messenger()->addStatus($this->t('App Details are successfully updated.'));

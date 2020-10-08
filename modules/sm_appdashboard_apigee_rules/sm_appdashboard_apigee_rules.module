@@ -22,4 +22,3 @@ function sm_appdashboard_apigee_rules_help($route_name, RouteMatchInterface $rou
     default:
   }
 }
-
