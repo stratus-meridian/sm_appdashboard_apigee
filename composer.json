@@ -1,0 +1,32 @@
+{
+  "name": "drupal/sm_appdashboard_apigee",
+  "description": "Provides an application dashboard interface for product manager role to approve/revoke keys connected to an Apigee Org.",
+  "type": "drupal-module",
+  "homepage": "https://www.drupal.org/project/sm_appdashboard_apigee",
+  "authors": [
+    {
+      "name": "Rakesh James",
+      "homepage": "https://www.drupal.org/u/rakeshgectcr",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Mer Alvin Grita",
+      "homepage": "https://www.drupal.org/u/meralvingrita24",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Jyothi Reddy",
+      "homepage": "https://www.drupal.org/u/kiranjyoth",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "http://drupal.org/project/sm_appdashboard_apigee",
+    "irc": "irc://irc.freenode.org/drupal-contribute",
+    "source": "http://cgit.drupalcode.org/sm_appdashboard_apigee"
+  },
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "drupal/apigee_edge": "*"
+  }
+}
