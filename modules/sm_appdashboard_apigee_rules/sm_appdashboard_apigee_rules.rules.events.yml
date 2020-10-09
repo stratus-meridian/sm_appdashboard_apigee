@@ -1,0 +1,3 @@
+sm_appdashboard_apps_status_change:
+  label: 'After updating app status via apigee appsdashbord'
+  category: 'Apigee apps Dashboard'

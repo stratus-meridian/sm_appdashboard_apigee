@@ -30,6 +30,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use DrupalCore\Link;
 use Drupal\Core\Url;
+use Drupal\sm_appdashboard_apigee_rules\Event\AppdashboardEvent;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -74,6 +75,20 @@ class AppDetailsEditForm extends FormBase {
   protected $teamAppCredentialControllerFactory;
 
   /**
+   * ModuleHandlerInterface definition.
+   *
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * EventDispatcherInterface definition.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -83,6 +98,8 @@ class AppDetailsEditForm extends FormBase {
     $instance->messenger = $container->get('messenger');
     $instance->developerAppCredentialControllerFactory = $container->get('apigee_edge.controller.developer_app_credential_factory');
     $instance->teamAppCredentialControllerFactory = $container->get('apigee_edge_teams.controller.team_app_credential_controller_factory');
+    $instance->moduleHandler = $container->get('module_handler');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
     return $instance;
   }
 
@@ -226,6 +243,14 @@ class AppDetailsEditForm extends FormBase {
     ];
 
     $form = [
+      'app_type' => [
+        '#type' => 'hidden',
+        '#value' => $apptype,
+      ],
+      'app_id' => [
+        '#type' => 'hidden',
+        '#value' => $appid,
+      ],
       'details__app_details' => [
         '#type' => 'details',
         '#title' => $this->t('App Details'),
@@ -316,6 +341,16 @@ class AppDetailsEditForm extends FormBase {
             $product_status == 'approved' ? AppCredentialControllerInterface::STATUS_APPROVE : AppCredentialControllerInterface::STATUS_REVOKE);
         }
       }
+
+      // Checking if the sm_appdashboard_apigee_rules is enabled or not.
+      if ($this->moduleHandler->moduleExists('sm_appdashboard_apigee_rules')) {
+        $app_entity_type = $form_state->getValue('app_type');
+        $app_entity_id = $form_state->getValue('app_id');
+        $app_entity = $this->appsDashboardStorage->getAppDetailsById($app_entity_type, $app_entity_id);
+        $event = new AppdashboardEvent($app_entity);
+        $this->eventDispatcher->dispatch(AppdashboardEvent::APP_STATUS_CHANGE, $event);
+      }
+
       $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
       $form_state->setRedirect('apps_dashboard.list');
     }

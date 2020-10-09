@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains sm_appdashboard_apigee_rules.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function sm_appdashboard_apigee_rules_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the sm_appdashboard_apigee_rules module.
+    case 'help.page.sm_appdashboard_apigee_rules':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Rules integration for Stratus Meridian&#039;&#039;s App Dashboard for Apigee module.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
