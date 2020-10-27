@@ -22,12 +22,15 @@ namespace Drupal\sm_appdashboard_apigee;
  */
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Utility\TableSort;
 
 /**
  * Provides useful tasks and functions.
  */
 class AppsDashboardStorageService implements AppsDashboardStorageServiceInterface {
+  use StringTranslationTrait;
 
   /**
    * Drupal\Core\Entity\EntityTypeManagerInterface definition.
@@ -37,10 +40,50 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $entityTypeManager;
 
   /**
-   * Constructs a new DefaultService object.
+   * ModuleHandlerInterface definition.
+   *
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  protected $moduleHandler;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * The pager manager.
+   *
+   * @var \Drupal\Core\Pager\PagerManagerInterface
+   */
+  protected $pagerManager;
+
+  /**
+   * Constructs a new DefaultService object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack used to retrieve the current request.
+   *
+   * @param \Drupal\Core\Pager\PagerManagerInterface|null $pager_manager
+   *   The pager manager.
+   *
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   The string translation service.
+   *
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, PagerManagerInterface $pager_manager = NULL, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
+    $this->requestStack = $request_stack;
+    $this->stringTranslation = $string_translation;
   }
 
   /**
@@ -48,18 +91,18 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    */
   public function labels() {
     $labels = [
-      ['data' => t('App Display Name'), 'field' => 'fieldDisplayName'],
-      ['data' => t('Developer Email'), 'field' => 'fieldEmail'],
-      ['data' => t('Company'), 'field' => 'fieldCompany'],
+      ['data' => $this->t('App Display Name'), 'field' => 'fieldDisplayName'],
+      ['data' => $this->t('Developer Email'), 'field' => 'fieldEmail'],
+      ['data' => $this->t('Company'), 'field' => 'fieldCompany'],
       [
-        'data' => t('Overall App Status'),
+        'data' => $this->t('Overall App Status'),
         'field' => 'fieldStatus',
         'sort' => 'desc',
       ],
-      ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
-      ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
-      ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
-      'labelOperations' => t('Operations'),
+      ['data' => $this->t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
+      ['data' => $this->t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
+      ['data' => $this->t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
+      'labelOperations' => $this->t('Operations'),
     ];
 
     return $labels;
@@ -69,13 +112,12 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function getAllAppDetails() {
-    $module_handler = \Drupal::service('module_handler');
     $apps = [];
 
     $devAppsStorage = $this->entityTypeManager->getStorage('developer_app');
     $devApps = $devAppsStorage->loadMultiple();
 
-    if ($module_handler->moduleExists('apigee_edge_teams')) {
+    if ($this->moduleHandler->moduleExists('apigee_edge_teams')) {
       if ($teamApps_storage = $this->entityTypeManager->getStorage('team_app')) {
         $teamApps = $teamApps_storage->loadMultiple();
       }
@@ -234,10 +276,9 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function constructSort($rows, $header, $flag = SORT_STRING | SORT_FLAG_CASE) {
-    $request = \Drupal::request();
 
-    $order = TableSort::getOrder($header, $request);
-    $sort = TableSort::getSort($header, $request);
+    $order = TableSort::getOrder($header, $this->requestStack->getCurrentRequest());
+    $sort = TableSort::getSort($header, $this->requestStack->getCurrentRequest());
     $column = $order['sql'];
 
     foreach ($rows as $row) {
