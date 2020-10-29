@@ -24,8 +24,11 @@ namespace Drupal\sm_appdashboard_apigee;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\Pager\PagerManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Utility\TableSort;
-
+use Drupal\Tests\Core\StringTranslation\StringTranslationTraitTest;
+use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Provides useful tasks and functions.
  */
@@ -40,52 +43,37 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $entityTypeManager;
 
   /**
-   * ModuleHandlerInterface definition.
+   * Drupal\Core\Extension\ModuleHandlerInterface definition.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
   /**
-   * The request stack.
+   * Symfony\Component\HttpFoundation\RequestStack definition
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
 
   /**
-   * The pager manager.
+   * Drupal\Core\Pager\PagerManagerInterface definition.
    *
    * @var \Drupal\Core\Pager\PagerManagerInterface
    */
   protected $pagerManager;
 
   /**
-   * Constructs a new DefaultService object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
-   *
-   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-   *   The request stack used to retrieve the current request.
-   *
-   * @param \Drupal\Core\Pager\PagerManagerInterface $pager_manager
-   *   The pager manager.
-   *
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
    *
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, PagerManagerInterface $pager_manager = NULL, TranslationInterface $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, PagerManagerInterface $pager_manager = NULL) {
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
     $this->requestStack = $request_stack;
     $this->pagerManager = $pager_manager;
-    $this->stringTranslation = $string_translation;
   }
+
 
   /**
    * {@inheritdoc}
