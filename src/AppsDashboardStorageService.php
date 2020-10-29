@@ -23,11 +23,9 @@ namespace Drupal\sm_appdashboard_apigee;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Utility\TableSort;
-use Drupal\Tests\Core\StringTranslation\StringTranslationTraitTest;
 use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Provides useful tasks and functions.
