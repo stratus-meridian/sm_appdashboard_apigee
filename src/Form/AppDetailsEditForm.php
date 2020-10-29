@@ -164,13 +164,10 @@ class AppDetailsEditForm extends FormBase {
       $appCompany = $app->getCompanyName();
     }
 
-    // Get App Credentials and API Products.
-    $appCredentials = $app->getCredentials();
 
     $i = 1;
-
     $data_apiProducts = [];
-
+    // Get App Credentials and API Products.
     foreach ($app->getCredentials() as $credential) {
       $data_apiProducts[$credential->id()] = [
         '#type' => 'fieldset',

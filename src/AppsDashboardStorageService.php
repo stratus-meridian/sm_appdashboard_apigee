@@ -72,7 +72,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack used to retrieve the current request.
    *
-   * @param \Drupal\Core\Pager\PagerManagerInterface|null $pager_manager
+   * @param \Drupal\Core\Pager\PagerManagerInterface $pager_manager
    *   The pager manager.
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
@@ -83,6 +83,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
     $this->requestStack = $request_stack;
+    $this->pagerManager = $pager_manager;
     $this->stringTranslation = $string_translation;
   }
 
@@ -153,7 +154,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $apps = $this->getAllAppDetails();
     $app = [];
 
-    foreach ($apps as $appKey => $appDetails) {
+    foreach ($apps as $appDetails) {
       if ($type == 'internal_name') {
         $getCompareKey = $appDetails->getName();
       }
@@ -188,7 +189,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
 
     $app = [];
 
-    foreach ($apps as $appKey => $appDetails) {
+    foreach ($apps as $appDetails) {
       if ($type == 'date_time_created') {
         $getCompareKey = $appDetails->getCreatedAt()->getTimestamp();
       }
@@ -303,11 +304,10 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function constructPager($items, $num_page, $index = 0) {
-    $pagerManager = \Drupal::service('pager.manager');
 
     $total = count($items);
 
-    $pagerConstruct = $pagerManager->createPager($total, $num_page, $index);
+    $pagerConstruct = $this->pagerManager->createPager($total, $num_page, $index);
     $current_page = $pagerConstruct->getCurrentPage();
 
     $chunks = array_chunk($items, $num_page);
