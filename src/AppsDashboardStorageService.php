@@ -22,12 +22,16 @@ namespace Drupal\sm_appdashboard_apigee;
  */
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Pager\PagerManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Utility\TableSort;
-
+use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Provides useful tasks and functions.
  */
 class AppsDashboardStorageService implements AppsDashboardStorageServiceInterface {
+  use StringTranslationTrait;
 
   /**
    * Drupal\Core\Entity\EntityTypeManagerInterface definition.
@@ -37,29 +41,55 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $entityTypeManager;
 
   /**
-   * Constructs a new DefaultService object.
+   * Drupal\Core\Extension\ModuleHandlerInterface definition.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  protected $moduleHandler;
+
+  /**
+   * Symfony\Component\HttpFoundation\RequestStack definition
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * Drupal\Core\Pager\PagerManagerInterface definition.
+   *
+   * @var \Drupal\Core\Pager\PagerManagerInterface
+   */
+  protected $pagerManager;
+
+  /**
+   *
+   *
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, PagerManagerInterface $pager_manager = NULL) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
+    $this->requestStack = $request_stack;
+    $this->pagerManager = $pager_manager;
   }
+
 
   /**
    * {@inheritdoc}
    */
   public function labels() {
     $labels = [
-      ['data' => t('App Display Name'), 'field' => 'fieldDisplayName'],
-      ['data' => t('Developer Email'), 'field' => 'fieldEmail'],
-      ['data' => t('Company'), 'field' => 'fieldCompany'],
+      ['data' => $this->t('App Display Name'), 'field' => 'fieldDisplayName'],
+      ['data' => $this->t('Developer Email'), 'field' => 'fieldEmail'],
+      ['data' => $this->t('Company'), 'field' => 'fieldCompany'],
       [
-        'data' => t('Overall App Status'),
+        'data' => $this->t('Overall App Status'),
         'field' => 'fieldStatus',
         'sort' => 'desc',
       ],
-      ['data' => t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
-      ['data' => t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
-      ['data' => t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
-      'labelOperations' => t('Operations'),
+      ['data' => $this->t('Active user in the site?'), 'field' => 'fieldOnwerActive'],
+      ['data' => $this->t('App Date/Time Created'), 'field' => 'fieldDateTimeCreated'],
+      ['data' => $this->t('App Date/Time Modified'), 'field' => 'fieldDateTimeModified'],
+      'labelOperations' => $this->t('Operations'),
     ];
 
     return $labels;
@@ -69,13 +99,12 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function getAllAppDetails() {
-    $module_handler = \Drupal::service('module_handler');
     $apps = [];
 
     $devAppsStorage = $this->entityTypeManager->getStorage('developer_app');
     $devApps = $devAppsStorage->loadMultiple();
 
-    if ($module_handler->moduleExists('apigee_edge_teams')) {
+    if ($this->moduleHandler->moduleExists('apigee_edge_teams')) {
       if ($teamApps_storage = $this->entityTypeManager->getStorage('team_app')) {
         $teamApps = $teamApps_storage->loadMultiple();
       }
@@ -111,7 +140,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $apps = $this->getAllAppDetails();
     $app = [];
 
-    foreach ($apps as $appKey => $appDetails) {
+    foreach ($apps as $appDetails) {
       if ($type == 'internal_name') {
         $getCompareKey = $appDetails->getName();
       }
@@ -146,7 +175,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
 
     $app = [];
 
-    foreach ($apps as $appKey => $appDetails) {
+    foreach ($apps as $appDetails) {
       if ($type == 'date_time_created') {
         $getCompareKey = $appDetails->getCreatedAt()->getTimestamp();
       }
@@ -234,10 +263,9 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function constructSort($rows, $header, $flag = SORT_STRING | SORT_FLAG_CASE) {
-    $request = \Drupal::request();
 
-    $order = TableSort::getOrder($header, $request);
-    $sort = TableSort::getSort($header, $request);
+    $order = TableSort::getOrder($header, $this->requestStack->getCurrentRequest());
+    $sort = TableSort::getSort($header, $this->requestStack->getCurrentRequest());
     $column = $order['sql'];
 
     foreach ($rows as $row) {
@@ -262,11 +290,10 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
    * {@inheritdoc}
    */
   public function constructPager($items, $num_page, $index = 0) {
-    $pagerManager = \Drupal::service('pager.manager');
 
     $total = count($items);
 
-    $pagerConstruct = $pagerManager->createPager($total, $num_page, $index);
+    $pagerConstruct = $this->pagerManager->createPager($total, $num_page, $index);
     $current_page = $pagerConstruct->getCurrentPage();
 
     $chunks = array_chunk($items, $num_page);

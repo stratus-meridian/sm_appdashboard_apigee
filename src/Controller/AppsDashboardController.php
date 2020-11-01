@@ -303,9 +303,6 @@ class AppsDashboardController extends ControllerBase {
         $appCompany = $app->getCompanyName();
       }
 
-      // Get App Credentials and API Products.
-      $apiProducts = $this->appsDashboardStorage->getApiProducts($app);
-
       // Get App Overall Status.
       $appOverallStatus = $this->appsDashboardStorage->getOverallStatus($app);
 
@@ -318,6 +315,7 @@ class AppsDashboardController extends ControllerBase {
           '#title' => 'Credential ' . $i++,
         ];
         $product_status = [];
+        // Get App Credentials and API Products.
         foreach ($credential->getApiProducts() as $apiProduct) {
           $product_status[] = [
             [

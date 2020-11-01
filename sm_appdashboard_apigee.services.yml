@@ -1,4 +1,4 @@
 services:
   sm_appsdashboard_apigee.appsdashboard_storage:
     class: Drupal\sm_appdashboard_apigee\AppsDashboardStorageService
-    arguments: ['@entity_type.manager']
+    arguments: ['@entity_type.manager', '@module_handler', '@request_stack', '@pager.manager']
