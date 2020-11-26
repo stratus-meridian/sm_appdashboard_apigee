@@ -1,3 +1,9 @@
 sm_appdashboard_apps_status_change:
-  label: 'After updating app status via apigee appsdashbord'
+  label: 'After updating team app status via apigee appsdashbord'
+  category: 'Apigee apps Dashboard'
+sm_appdashboard_apps_status_approved:
+  label: 'After approving team app status via apigee appsdashbord'
+  category: 'Apigee apps Dashboard'
+sm_appdashboard_apps_status_revoked:
+  label: 'After revoking team app status via apigee appsdashbord'
   category: 'Apigee apps Dashboard'
