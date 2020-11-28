@@ -2,6 +2,7 @@
 
 namespace Drupal\sm_appdashboard_apigee_rules\Event;
 
+use Apigee\Edge\Api\Management\Entity\App;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -29,7 +30,7 @@ class AppdashboardEvent extends Event {
    * @param \Apigee\Edge\Api\Management\Entity\App $app_entity
    *   The app entity.
    */
-  public function __construct($app_entity) {
+  public function __construct(App $app_entity) {
     $this->appEntity = $app_entity;
   }
 
