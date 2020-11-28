@@ -5,7 +5,7 @@ namespace Drupal\sm_appdashboard_apigee_rules\Event;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Appdashboard event for rules module integration on apps getting revoked.
+ * AppdashboardStatusRevoked event for rules module integration on apps getting revoked.
  *
  * @package Drupal\sm_appdashboard_apigee_rules\Event
  */

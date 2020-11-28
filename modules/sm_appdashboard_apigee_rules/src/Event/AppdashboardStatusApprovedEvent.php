@@ -5,7 +5,7 @@ namespace Drupal\sm_appdashboard_apigee_rules\Event;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Appdashboard event for rules module integration on apps are getting approved.
+ * AppdashboardStatusApproved event for rules module integration on apps are getting approved.
  *
  * @package Drupal\sm_appdashboard_apigee_rules\Event
  */
