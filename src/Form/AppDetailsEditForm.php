@@ -31,6 +31,8 @@ use Drupal\Core\Form\FormStateInterface;
 use DrupalCore\Link;
 use Drupal\Core\Url;
 use Drupal\sm_appdashboard_apigee_rules\Event\AppdashboardEvent;
+use Drupal\sm_appdashboard_apigee_rules\Event\AppdashboardStatusApprovedEvent;
+use Drupal\sm_appdashboard_apigee_rules\Event\AppdashboardStatusRevokedEvent;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -331,9 +333,12 @@ class AppDetailsEditForm extends FormBase {
       else {
         $credentialController = $this->teamAppCredentialControllerFactory->teamAppCredentialController($values['details__api_products']['app_company'], $values['details__api_products']['app_internal_name']);
       }
-
+      // Get previous app status.
+      $product_previous_status = '';
       foreach ($values['details__api_products']['app_credentials'] as $key => $credential) {
         foreach ($values['details__api_products']['app_credentials'][$key]['apiproduct'] as $product_name => $product_status) {
+          // Get previous app status.
+          $product_previous_status = $form['details__api_products']['app_credentials'][$key]['apiproduct'][$product_name]['#default_value'];
           $credentialController->setApiProductStatus($credential['app_consumer_key'], $product_name,
             $product_status == 'approved' ? AppCredentialControllerInterface::STATUS_APPROVE : AppCredentialControllerInterface::STATUS_REVOKE);
         }
@@ -344,8 +349,18 @@ class AppDetailsEditForm extends FormBase {
         $app_entity_type = $form_state->getValue('app_type');
         $app_entity_id = $form_state->getValue('app_id');
         $app_entity = $this->appsDashboardStorage->getAppDetailsById($app_entity_type, $app_entity_id);
-        $event = new AppdashboardEvent($app_entity);
-        $this->eventDispatcher->dispatch(AppdashboardEvent::APP_STATUS_CHANGE, $event);
+        $status_event_change = new AppdashboardEvent($app_entity);
+        $this->eventDispatcher->dispatch(AppdashboardEvent::APP_STATUS_CHANGE, $status_event_change);
+        // Dispatch event if app status is changed from revoked to approved.
+        if ($product_previous_status === 'revoked' && $product_status === 'approved') {
+          $event_approved = new AppdashboardStatusApprovedEvent($app_entity);
+          $this->eventDispatcher->dispatch(AppdashboardStatusApprovedEvent::APP_STATUS_APPROVED, $event_approved);
+        }
+        // Dispatch event if app status is changed from approved to revoked.
+        if ($product_previous_status === 'approved' && $product_status === 'revoked') {
+          $event_revoked = new AppdashboardStatusRevokedEvent($app_entity);
+          $this->eventDispatcher->dispatch(AppdashboardStatusRevokedEvent::APP_STATUS_REVOKED, $event_revoked);
+        }
       }
 
       $this->messenger()->addStatus($this->t('App Details are successfully updated.'));
