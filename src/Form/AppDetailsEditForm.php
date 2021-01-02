@@ -166,7 +166,6 @@ class AppDetailsEditForm extends FormBase {
       $appCompany = $app->getCompanyName();
     }
 
-
     $i = 1;
     $data_apiProducts = [];
     // Get App Credentials and API Products.

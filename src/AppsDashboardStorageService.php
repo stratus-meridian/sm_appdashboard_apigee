@@ -27,6 +27,7 @@ use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Utility\TableSort;
 use Symfony\Component\HttpFoundation\RequestStack;
+
 /**
  * Provides useful tasks and functions.
  */
@@ -48,7 +49,7 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $moduleHandler;
 
   /**
-   * Symfony\Component\HttpFoundation\RequestStack definition
+   * Symfony\Component\HttpFoundation\RequestStack definition.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
@@ -62,8 +63,16 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
   protected $pagerManager;
 
   /**
+   * AppsDashboardStorageService constructor.
    *
-   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The current request object.
+   * @param \Drupal\Core\Pager\PagerManagerInterface $pager_manager
+   *   The pager service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, PagerManagerInterface $pager_manager = NULL) {
     $this->entityTypeManager = $entity_type_manager;
@@ -71,7 +80,6 @@ class AppsDashboardStorageService implements AppsDashboardStorageServiceInterfac
     $this->requestStack = $request_stack;
     $this->pagerManager = $pager_manager;
   }
-
 
   /**
    * {@inheritdoc}
