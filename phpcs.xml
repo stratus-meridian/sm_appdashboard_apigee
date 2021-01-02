@@ -7,6 +7,7 @@
     <!--Ignore README markdown-->
     <exclude-pattern>README\.md</exclude-pattern>
     <exclude-pattern>CHANGELOG\.md</exclude-pattern>
+    <exclude-pattern>LICENSE\.txt</exclude-pattern>
 
     <rule ref="Drupal"/>
 </ruleset>
