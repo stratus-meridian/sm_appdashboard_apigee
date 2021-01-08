@@ -21,7 +21,8 @@ REQUIREMENTS
 
 This module requires
 - Rules (https://www.drupal.org/project/rules)
-- Stratus Meridian's App Dashboard for Apigee (https://www.drupal.org/project/sm_appdashboard_apigee)
+- Stratus Meridian's App Dashboard for Apigee 
+(https://www.drupal.org/project/sm_appdashboard_apigee)
 
 INSTALLATION
 ------------

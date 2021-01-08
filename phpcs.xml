@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="sm_appdashboard_apigee">
+    <description>Default PHP CodeSniffer configuration for sm appdashboard apigee module.</description>
+    <file>.</file>
+    <arg name="extensions" value="inc,install,module,php,profile,test,theme,yml"/>
+
+    <!--Ignore README markdown-->
+    <exclude-pattern>README\.md</exclude-pattern>
+    <exclude-pattern>CHANGELOG\.md</exclude-pattern>
+    <exclude-pattern>LICENSE\.txt</exclude-pattern>
+
+    <rule ref="Drupal"/>
+</ruleset>
